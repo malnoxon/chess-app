@@ -9,3 +9,5 @@ temp/
 *.log
 *.swp
 .idea/
+ionic/ionic.config.json
+ionic/.io-config.json
