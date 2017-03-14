@@ -1,7 +1,7 @@
 {
-  "name": "ionic",
+  "name": "chess-app",
   "version": "1.1.1",
-  "description": "ionic: An Ionic project",
+  "description": "chess-app: An Ionic project",
   "dependencies": {
     "gulp": "^3.5.6",
     "gulp-sass": "^2.0.4",
@@ -19,8 +19,8 @@
     "cordova-plugin-console",
     "cordova-plugin-statusbar",
     "cordova-plugin-device",
-    "ionic-plugin-keyboard",
-    "cordova-plugin-splashscreen"
+    "cordova-plugin-splashscreen",
+    "ionic-plugin-keyboard"
   ],
   "cordovaPlatforms": []
 }

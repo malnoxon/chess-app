@@ -17,6 +17,7 @@
     </script>-->
 
     <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+
     <link href="css/style.css" rel="stylesheet">
 
     <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
@@ -34,12 +35,123 @@
   </head>
   <body ng-app="starter">
 
-    <ion-pane>
-      <ion-header-bar class="bar-stable">
-        <h1 class="title">Ionic Blank Starter</h1>
-      </ion-header-bar>
-      <ion-content>
+  <ion-nav-view></ion-nav-view>
+
+
+  <script id="templates/view.html" type="text/ng-template">
+
+    <ion-nav-view name="start-view"></ion-nav-view>
+    <ion-nav-view name="vert-view"></ion-nav-view>
+
+  </script>
+
+  <script id="templates/start.html" type="text/ng-template">
+    <ion-view view-title="Start View">
+      <ion-content class="background">
+        <div>
+          <div id="title">UNNAMED! YAY!</div>
+          <div id="startMenu">
+              <button class="smNavButton">Multiplayer</button>
+              <button class="smNavButton" ng-click="singlePlayer()">Single Player</button>
+              <button class="smNavButton">Analysis</button>
+              <button class="smNavButton">Settings</button>
+          </div>
+        </div>
       </ion-content>
-    </ion-pane>
+    </ion-view>
+  </script>
+
+  <script id="templates/vert.html" type="text/ng-template">
+    <ion-view view-title="Vertical View">
+      <ion-content class="background">
+        <div>
+          <div id="player1info">
+            <span id="clock1"><h2 class="clock"><b>{{time1}}</b></h2></span>
+            <p ng-repeat="piece in capturedPieces1 | orderBy:'piece.value' track by $index">
+              <img class="capPiece" ng-src="img/{{color1}}{{piece.type}}{{appearance}}.png">
+            </p>
+          </div>
+
+          <div>
+            <p class="user" id="user1"><img ng-src="{{avatar1}}" class="avatar">  {{username1}}</p>
+          </div>
+
+          <img id="board" ng-src="img/board{{appearance}}.png">
+
+
+          <div>
+            <p class="user" id ="user2">{{username2}}  <img ng-src = "{{avatar2}}" class ="avatar"></p>
+          </div>
+
+          <div id="player2info">
+            <p ng-repeat="piece in capturedPieces2 | orderBy:'piece.value' track by $index">
+              <img class="capPiece" ng-src="img/{{color2}}{{piece.type}}{{appearance}}.png">
+            </p><span id="clock2"><h2 class="clock"><b>{{time2}}</b></h2></span>
+          </div>
+          <div id="botSpacing"></div>
+          <div id="menus">
+            <button class="menuButton" onclick="openNavNot()">Notation</button><button class="menuButton" onclick="openNavMenu()">Menu</button>
+          </div>
+
+          <div id="notationMenu" class="botMenu">
+            <a class="closeMenu" onclick="closeNavNot()">v</a>
+            <table id="notTable">
+              <tr style="width: 100%; height:10%;">
+                <td>
+                  <table style="width: 100%; height:100%;">
+                    <tr>
+                      <th id="notTableHead" colspan="2"><center>Notation</center></th>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="height: 100%; overflow:auto;">
+                    <table id="notTableRows">
+                      <tr ng-repeat="move in notation track by $index">
+                        <td style="width: 10%;">{{$index + 1}}</td><td>{{move[0]}}</td><td>{{move[1]}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+          </div>
+          <div id="mainMenu" class="botMenu">
+            <a class="closeMenu" onclick="closeNavMenu()">v</a>
+            <div id="mmButtons">
+              <button class="mmNavButton" ng-click="startMenu()">Main Menu</button>
+              <button class="mmNavButton">Offer Draw</button>
+              <button class="mmNavButton">Resign</button>
+              <button class="mmNavButton">Settings</button>
+            </div>
+          </div>
+
+        </div>
+      </ion-content>
+    </ion-view>
+  </script>
+
+  <script>
+    function openNavNot() {
+      document.getElementById("notationMenu").style.height = "85%";
+    }
+
+    function closeNavNot() {
+      document.getElementById("notationMenu").style.height = "0";
+    }
+
+    function openNavMenu() {
+      document.getElementById("mainMenu").style.height = "85%";
+    }
+
+    function closeNavMenu() {
+      document.getElementById("mainMenu").style.height = "0";
+    }
+  </script>
+
+
   </body>
 </html>
