@@ -1,1 +1,253 @@
-/* Empty. Add your own CSS if you like */
+/**********************************************************************/
+/*                                global                              */
+/**********************************************************************/
+
+.background{
+  background-color: #D4A079;
+}
+
+/**********************************************************************/
+/*                              start menu                            */
+/**********************************************************************/
+
+#title{
+  font-family: times;
+  font-size: 10vw;
+  text-align: center;
+  padding: 15vh 0;
+  color: #40240F;
+}
+#startMenu{
+  text-align: center;
+}
+
+.smNavButton{
+  background-color: #8B5934;
+  border: none;
+  border-radius: 10%;
+  color: #D4A079;
+  padding: 2vh 0;
+  margin: 2vh auto;
+  width: 50%;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 1vw 2vw 0 #40240F;
+}
+
+.smNavButton:hover{
+  background-color: #966541;
+}
+
+.smNavButton:active{
+  background-color: #966541;
+}
+
+/**********************************************************************/
+/*                            vertical view                           */
+/**********************************************************************/
+
+#board{
+  border: 1vw solid #8B5934;
+  border-radius: 3%;
+  width: 75vw;
+  box-shadow: 0 2vw 4vw 0 #694225;
+  margin-left: 12.5vw;
+}
+
+#player1info{
+  margin: 3vh auto 3vh 3vw;
+}
+
+#player1info #clock1,
+#player1info p {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#player2info{
+  margin: 10px 25px 25px auto;
+  float: right;
+}
+
+#player2info #clock2,
+#player2info p {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.clock{
+  color: #D4A079;
+  border-radius: 10%;
+  padding: 2vw;
+  background-color: #8B5934;
+  text-align: center;
+  font-family: times;
+  font-size: 8vw;
+  box-shadow: 0 1vw 2vw 0 #694225;
+}
+
+#clock1{
+  margin-right: 3vw;
+  width: 30vw;
+}
+
+#clock2{
+  margin-left: 3vw;
+  width: 30vw;
+}
+
+.user{
+  color: #9C6D4B;
+  font-family: times;
+  font-size: 5vw;
+}
+
+#user1{
+  margin: 10px auto 10px 30px;
+  text-align: left;
+}
+
+#user2{
+  margin: 10px 30px 10px auto;
+  text-align: right;
+}
+
+.avatar{
+  vertical-align: middle;
+  width: 12%;
+  color: #8B5934;
+  border: 2px solid #8B5934;
+  border-radius: 5%;
+}
+
+.capPiece{
+  vertical-align: middle;
+  width: 8vw;
+  position: relative;
+  margin: 0 -2.25vw;
+}
+
+#blank{
+  padding-bottom: 20vh;
+}
+
+#menus{
+  display: inline-block;
+}
+
+#botSpacing{
+  height: 10vh;
+}
+
+.botMenu {
+  height: 0;
+  width: 90vw;
+  position: fixed;
+  margin-left: 5vw;
+  z-index: 1;
+  bottom: 0;
+  background-color: #693E1F;
+  transition: 1s;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: 0 0 4vw 0 #40240F;
+}
+
+.menuButton{
+  background-color: #8B5934;
+  border: none;
+  color: #D4A079;
+  padding: .5vh 0;
+  margin: 0 10vw;
+  width: 30vw;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 0 2vw 0 #694225;
+}
+
+.botMenu .closeMenu{
+  position: absolute;
+  color: #D4A079;
+  padding: 2vh 5vh;
+  right: 0;
+  text-decoration: none;
+  font-size: 10vw;
+}
+.botMenu .closeMenu:hover{
+  color: #E3C4AC;
+}
+
+#mmButtons{
+  padding-top: 30%;
+}
+
+#notTable{
+  width: 80%;
+  margin: 15% auto;
+  height: 80%;
+  box-shadow: 0 1vw 2vw 0 #40240F;
+  font-family: times;
+}
+#notTableHead{
+  width: 100%;
+  background-color:#40240F;
+  color: #D4A079;
+  font-size: 18px;
+  vertical-align: middle;
+}
+#notTableRows{
+  width: 100%;
+  color: #40240F;
+  font-size: 16px;
+  vertical-align: middle;
+  border: 1px solid #40240F;
+}
+#notTableRows td{
+  vertical-align: middle;
+}
+#notTableRows tr:nth-child(odd){
+  background-color: #D4A079;
+  height: 30px;
+  vertical-align: middle;
+}
+#notTableRows tr:nth-child(even){
+  background-color: #E3C4AC;
+  height: 30px;
+  vertical-align: middle;
+}
+
+.tableScroll{
+  overflow-y: scroll;
+}
+
+.mmNavButton{
+  background-color: #D4A079;
+  border: none;
+  border-radius: 10%;
+  color: #8B5934;
+  padding: 2vh 0;
+  margin: 2vh auto;
+  width: 50%;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 1vw 2vw 0 #40240F;
+}
+
+.mmNavButton:hover{
+  background-color: #E3C4AC;
+}
+
+.mmNavButton:active{
+  background-color: #E3C4AC;
+}
+
+::-webkit-scrollbar{
+  width: 5px;
+}
+::-webkit-scrollbar-thumb{
+  background-color: #381E0B;
+}
