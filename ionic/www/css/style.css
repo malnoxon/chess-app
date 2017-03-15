@@ -53,6 +53,26 @@
   width: 75vw;
   box-shadow: 0 2vw 4vw 0 #694225;
   margin-left: 12.5vw;
+  z-index: 0;
+}
+
+.board_grid{
+  float:left;
+  position: absolute;
+  width: 75vw;
+  height: 40vh;
+  margin-left:14vw;
+  overflow:hidden;
+  z-index: 1;
+  bottom: 30vh;
+}
+
+.board_cell {
+  float:left;
+  /*position: absolute;*/
+  width: 9.375vw;
+  height: 5vh;
+  overflow:hidden;
 }
 
 #player1info{
