@@ -118,9 +118,14 @@ angular.module('starter', ['ionic'])
             $scope.capturedPieces2.push($scope.board[new_row][new_col]);
           }
         }
-
-        $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
-        $scope.board[old_row][old_col] = "";
+        var orig = $scope.board[old_row][old_col];
+        var dest = $scope.board[new_row][new_col];
+        if ($scope.legalMove(orig, dest)) {
+          $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
+          $scope.board[old_row][old_col] = "";
+        } else {
+          console.log("Illegal move");
+        }
 
         selected_cell = -1;
       }
@@ -203,5 +208,38 @@ angular.module('starter', ['ionic'])
     $scope.getBoard = function () {
       return [].concat.apply([], $scope.board);
     };
+
+    $scope.legalMove = function(orig, dest) {
+      // Normal piece movement
+      if (orig.type == ("Pawn")) {
+        console.log("clicked pawn");
+
+      } else if (orig.type == ("Rook")) {
+        console.log("clicked Rook");
+
+      } else if (orig.type == ("Knight")) {
+        console.log("clicked Knight");
+
+      } else if (orig.type == ("Bishop")) {
+        console.log("clicked Bishop");
+
+      } else if (orig.type == ("Queen")) {
+        console.log("clicked Queen");
+
+      } else if (orig.type == ("King")) {
+        console.log("clicked King");
+
+      } else {
+        console.log("ERROR: Type does not exist")
+        console.log(new Error().stack);
+      }
+
+
+      // Check move into check
+
+      // legal move
+      return true;
+      //return false;
+    }
 
   });
