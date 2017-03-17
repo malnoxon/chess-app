@@ -58,10 +58,9 @@ angular.module('starter', ['ionic'])
 
 
   .controller('vertCtrl', function($scope, $state) {
-    function Piece (type, row, col){
+    function Piece (type, color){
       this.type = type;
-      this.row = row;
-      this.col = col;
+      this.color = color;
       this.isCaptured = false;
 
       if(this.type == "Pawn"){
@@ -89,13 +88,6 @@ angular.module('starter', ['ionic'])
       }
     }
 
-    $scope.pawn = new Piece("Pawn", 1, 'a');
-    $scope.knight = new Piece("Knight", 1, 'a');
-    $scope.bishop = new Piece("Bishop", 1, 'a');
-    $scope.rook = new Piece("Rook", 1, 'a');
-    $scope.queen = new Piece("Queen", 1, 'a');
-    $scope.king = new Piece("King", 1, 'a');
-
     $scope.username1 = "DUCK_BOT - Level 4";
     $scope.username2 = "smmurphy33";
 
@@ -107,6 +99,41 @@ angular.module('starter', ['ionic'])
 
     $scope.appearance = 1;
 
+    var selected_cell = -1;
+
+    $scope.cell_clicked = function (n) {
+      if (selected_cell == -1) {
+        selected_cell = n;
+      } else {
+        var new_row = Math.floor(n/8);
+        var new_col = n % 8;
+
+        var old_row = Math.floor(selected_cell/8);
+        var old_col = selected_cell % 8;
+
+        if ($scope.board[new_row][new_col] != "") {
+          if ($scope.board[new_row][new_col].color == "white"){
+            $scope.capturedPieces1.push($scope.board[new_row][new_col]);
+          } else {
+            $scope.capturedPieces2.push($scope.board[new_row][new_col]);
+          }
+        }
+
+        $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
+        $scope.board[old_row][old_col] = "";
+
+        selected_cell = -1;
+      }
+    };
+
+    $scope.get_piece_image_icon = function(piece) {
+      if (piece == "") {
+        return "//:0";
+      } else {
+        return "img/" + piece.color + piece.type + $scope.appearance + ".png";
+      }
+    }
+
     $scope.notation = [["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
       ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
       ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
@@ -117,12 +144,64 @@ angular.module('starter', ['ionic'])
       ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
       ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", ""]];
 
-    $scope.capturedPieces1 = [$scope.pawn, $scope.pawn, $scope.pawn, $scope.pawn, $scope.pawn, $scope.pawn,
-      $scope.pawn, $scope.pawn, $scope.knight, $scope.knight, $scope.bishop, $scope.bishop,
-      $scope.rook, $scope.rook, $scope.queen, $scope.king];
-    $scope.capturedPieces2 = [$scope.pawn, $scope.pawn, $scope.knight,
-      $scope.bishop, $scope.rook, $scope.queen, $scope.king];
+    $scope.capturedPieces1 = [];
+    $scope.capturedPieces2 = [];
 
     $scope.time1 = "5:00";
     $scope.time2 = "1:20:00";
-  })
+
+    $scope.board = [
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+    ];
+
+    // Black piece initial placement
+    $scope.board[0][0] = new Piece("Rook", "black");
+    $scope.board[0][1] = new Piece("Knight", "black");
+    $scope.board[0][2] = new Piece("Bishop", "black");
+    $scope.board[0][3] = new Piece("Queen", "black");
+    $scope.board[0][4] = new Piece("King", "black");
+    $scope.board[0][5] = new Piece("Bishop", "black");
+    $scope.board[0][6] = new Piece("Knight", "black");
+    $scope.board[0][7] = new Piece("Rook", "black");
+
+    $scope.board[1][0] = new Piece("Pawn", "black");
+    $scope.board[1][1] = new Piece("Pawn", "black");
+    $scope.board[1][2] = new Piece("Pawn", "black");
+    $scope.board[1][3] = new Piece("Pawn", "black");
+    $scope.board[1][4] = new Piece("Pawn", "black");
+    $scope.board[1][5] = new Piece("Pawn", "black");
+    $scope.board[1][6] = new Piece("Pawn", "black");
+    $scope.board[1][7] = new Piece("Pawn", "black");
+
+    // White piece initial placement
+    $scope.board[7][0] = new Piece("Rook", "white");
+    $scope.board[7][1] = new Piece("Knight", "white");
+    $scope.board[7][2] = new Piece("Bishop", "white");
+    $scope.board[7][3] = new Piece("Queen", "white");
+    $scope.board[7][4] = new Piece("King", "white");
+    $scope.board[7][5] = new Piece("Bishop", "white");
+    $scope.board[7][6] = new Piece("Knight", "white");
+    $scope.board[7][7] = new Piece("Rook", "white");
+
+    $scope.board[6][0] = new Piece("Pawn", "white");
+    $scope.board[6][1] = new Piece("Pawn", "white");
+    $scope.board[6][2] = new Piece("Pawn", "white");
+    $scope.board[6][3] = new Piece("Pawn", "white");
+    $scope.board[6][4] = new Piece("Pawn", "white");
+    $scope.board[6][5] = new Piece("Pawn", "white");
+    $scope.board[6][6] = new Piece("Pawn", "white");
+    $scope.board[6][7] = new Piece("Pawn", "white");
+
+
+    $scope.getBoard = function () {
+      return [].concat.apply([], $scope.board);
+    };
+
+  });

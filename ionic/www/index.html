@@ -79,79 +79,9 @@
           <div>
             <img id="board" ng-src="img/board{{appearance}}.png">
             <div class="board_grid">
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              <div class="board_cell">1</div>
-              <div class="board_cell">2</div>
-              <div class="board_cell">3</div>
-              <div class="board_cell">4</div>
-              <div class="board_cell">5</div>
-              <div class="board_cell">6</div>
-              <div class="board_cell">7</div>
-              <div class="board_cell">8</div>
-
-              
+              <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)">
+                <img class="capPiece" ng-src="{{get_piece_image_icon(piece)}}">
+              </div>
             </div>
           </div>
 
