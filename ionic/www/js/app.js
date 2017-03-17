@@ -111,18 +111,26 @@ angular.module('starter', ['ionic'])
         var old_row = Math.floor(selected_cell/8);
         var old_col = selected_cell % 8;
 
-        if ($scope.board[new_row][new_col] != "") {
-          if ($scope.board[new_row][new_col].color == "white"){
-            $scope.capturedPieces1.push($scope.board[new_row][new_col]);
-          } else {
-            $scope.capturedPieces2.push($scope.board[new_row][new_col]);
-          }
-        }
-        var orig = $scope.board[old_row][old_col];
-        var dest = $scope.board[new_row][new_col];
+        // make inputs for legalMove function
+        var orig = {"piece": $scope.board[old_row][old_col],
+                    "row": old_row,
+                    "col": old_col};
+        var dest = {"piece": $scope.board[new_row][new_col], // need peice to know if null ("")
+                    "row": new_row,
+                    "col": new_col};
+
         if ($scope.legalMove(orig, dest)) {
+          if ($scope.board[new_row][new_col] != "") {
+            if ($scope.board[new_row][new_col].color == "white"){
+              $scope.capturedPieces1.push($scope.board[new_row][new_col]);
+            } else {
+              $scope.capturedPieces2.push($scope.board[new_row][new_col]);
+            }
+          }
+
           $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
           $scope.board[old_row][old_col] = "";
+
         } else {
           console.log("Illegal move");
         }
@@ -209,37 +217,143 @@ angular.module('starter', ['ionic'])
       return [].concat.apply([], $scope.board);
     };
 
+
+    /**
+     *
+     * @param orig - dictionary of piece, row, and col of piece you want to move (keys are piece, row, col)
+     * @param dest - dictionary of piece, row, and col of where you want to move (keys are piece, row, col)
+     * @returns true if move is valid, false if move is not valid
+     */
     $scope.legalMove = function(orig, dest) {
-      // Normal piece movement
-      if (orig.type == ("Pawn")) {
-        console.log("clicked pawn");
+      // Normal piece movement:
 
-      } else if (orig.type == ("Rook")) {
-        console.log("clicked Rook");
+      // MOVE PAWN
+      if (orig.piece.type == ("Pawn")) {
 
-      } else if (orig.type == ("Knight")) {
-        console.log("clicked Knight");
+        if (orig.piece.color == "black") {
+          if ((dest.row == orig.row + 1) || // can only move forward by 1
+              (orig.row == 1 && dest.row == orig.row + 2)) { // unless this is the first move, then can move forward by 2
+            if ((dest.col == orig.col && dest.piece.type == null) ||  // can move directly forward if there is no piece there
+               ((dest.col == orig.col + 1 || dest.col == orig.col - 1) && dest.piece.color == "white")) { // can move diagonally forward if taking
+              return true;
+            }
+          }
+        } else if (orig.piece.color == "white") { // same rules as black but flipped
+          if ((dest.row == orig.row - 1) || // can only move forward by 1
+            (orig.row == 6 && dest.row == orig.row - 2)) { // unless this is the first move, then can move forward by 2
+            if ((dest.col == orig.col && dest.piece.type == null) ||  // can move directly forward if there is no piece there
+              ((dest.col == orig.col + 1 || dest.col == orig.col - 1) && dest.piece.color == "black")) { // can move diagonally forward if taking
+              return true;
+            }
+          }
+        }
 
-      } else if (orig.type == ("Bishop")) {
-        console.log("clicked Bishop");
+        // MOVE ROOK
+      } else if (orig.piece.type == ("Rook")) {
+        if (dest.piece.color != orig.piece.color) { // cannot move to destination occupied by self
+          // Moving in a row:
+          if (orig.row == dest.row) {
+            // Check if there is a free path between orig and dest in row
+            var endIndex = Math.max(orig.col, dest.col);
+            var beginIndex = Math.min(orig.col, dest.col);
+            for (var i = 1; i < endIndex - beginIndex; i++) {
+              if ($scope.board[orig.row][beginIndex + i] != "") {
+                return false; // invalid move -- something in path
+              }
+            }
 
-      } else if (orig.type == ("Queen")) {
-        console.log("clicked Queen");
+            // found no fault with row move
+            return true;
 
-      } else if (orig.type == ("King")) {
+            // Moving in a column
+          } else if (orig.col == dest.col) {
+            var endIndex = Math.max(orig.row, dest.row);
+            var beginIndex = Math.min(orig.row, dest.row);
+            for (var i = 1; i < endIndex - beginIndex; i++) {
+              if ($scope.board[beginIndex + i][orig.col] != "") {
+                return false; // invalid move -- something in path
+              }
+            }
+            // found no fault with column move
+            return true;
+          }
+
+        }
+
+        // MOVE KNIGHT
+      } else if (orig.piece.type == ("Knight")) {
+        if (dest.piece.color != orig.piece.color) { // cannot move to destination occupied by self
+          var columnDiff = Math.abs(dest.col - orig.col);
+          var rowDiff = Math.abs(dest.row - orig.row);
+          if (columnDiff == 1 && rowDiff == 2) {
+            return true;
+          } else if (columnDiff == 2 && rowDiff ==1) {
+            return true;
+          }
+
+        }
+
+        // MOVE BISHOP
+      } else if (orig.piece.type == ("Bishop")) {
+        if (dest.piece.color != orig.piece.color) { // cannot move to destination occupied by self
+          var columnDiff = Math.abs(dest.col - orig.col);
+          var rowDiff = Math.abs(dest.row - orig.row);
+          if (columnDiff != rowDiff) { // ie. moving diagonal
+            return false; // not valid move
+          }
+          // check to see if path exists between orig and dest
+
+          // var for up or down direction. should = -1 for up, 1 for down
+          var UDdirection = Math.abs(dest.row - orig.row)/(dest.row - orig.row);
+          // var for right or left direction. should = 1 for right, -1 for left
+          var RLdirection = Math.abs(dest.col - orig.col) / (dest.col - orig.col);
+          for (var i = 1; i < rowDiff; i ++) {
+            //debugging: console.log($scope.board[orig.row + i*UDdirection][orig.col + i*RLdirection])
+            if ($scope.board[orig.row + i*UDdirection][orig.col + i*RLdirection] != "") {
+              return false;
+            }
+          }
+          // found no fault with move, return true;
+          return true;
+        }
+
+
+        // MOVE QUEEN
+      } else if (orig.piece.type == ("Queen")) {
+        // Should be same value as legal move of rook || bishop
+        // so just do legalMove(if this was a rook) || legalMove(if this was a bishop)
+        var rook_orig = {"piece": new Piece("Rook", orig.piece.color),
+                        "row": orig.row,
+                        "col": orig.col};
+        var bish_orig = {"piece": new Piece("Bishop", orig.piece.color),
+                         "row": orig.row,
+                         "col": orig.col};
+        return ($scope.legalMove(rook_orig, dest) || $scope.legalMove(bish_orig, dest));
+
+
+        // MOVE KING
+      } else if (orig.piece.type == ("King")) {
         console.log("clicked King");
+        if (dest.piece.color != orig.piece.color) { // cannot move to destination occupied by self
+          var columnDiff = Math.abs(dest.col - orig.col);
+          var rowDiff = Math.abs(dest.row - orig.row);
+
+          if (columnDiff <= 1 && rowDiff <=1) {
+            return true;
+          }
+        }
+
+        //TODO: NEED TO HANDLE CASTLING RULES
 
       } else {
         console.log("ERROR: Type does not exist")
         console.log(new Error().stack);
       }
 
+      //TODO: Check if player is moving into check
 
-      // Check move into check
-
-      // legal move
-      return true;
-      //return false;
+      // default return false
+      return false;
     }
 
   });
