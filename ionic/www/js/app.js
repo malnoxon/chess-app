@@ -217,6 +217,29 @@ angular.module('starter', ['ionic'])
       return [].concat.apply([], $scope.board);
     };
 
+    /**
+     *
+     * @param orig - dictionary of piece, row, and col of piece you want to move (keys are piece, row, col)
+     * @param dest - dictionary of piece, row, and col of where you want to move (keys are piece, row, col)
+     * @returns the move to be entered in Long Algebraic Notation
+     * NOTE: this function is for communicating with the AI, some modifications will be needed for the displayed notation
+     */
+    $scope.moveToLAN = function(orig, dest, queened_to) {
+      var move = "";
+      var piece_symbols = {"Knight": "K", "Bishop": "B", "Rook": "R", "Queen": "Q", "King": "K", "Pawn": ""};
+      var col_letters = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"};
+      // var connecting_char = "-";
+      // if(dest.piece != null) {
+      //   connecting_char = "x";
+      // }
+      move.concat(piece_symbols[orig.piece.type], (orig.row+1).toString(), col_letters[orig.col], piece_symbols[dest.piece.type], (dest.row+1).toString(), col_letters[dest.col]);
+
+      if(queened_to != null) {
+        move.concat("=", piece_symbols[queened_to.type]);
+      }
+
+      return move;
+    }
 
     /**
      *
@@ -228,6 +251,7 @@ angular.module('starter', ['ionic'])
       // Normal piece movement:
 
       // MOVE PAWN
+      // TODO: also need en passant
       if (orig.piece.type == ("Pawn")) {
 
         if (orig.piece.color == "black") {
