@@ -2,26 +2,113 @@
 /*                                global                              */
 /**********************************************************************/
 
-.background{
+.background {
   background-color: #D4A079;
+}
+
+/**********************************************************************/
+/*                              Login popup                           */
+/**********************************************************************/
+/* Full-width input fields */
+login_input[type=text], login_input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.login_submit {
+  background-color: #4CAF50;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.login_submit:hover {
+  opacity: 0.8;
+}
+
+.login_outer_container {
+  text-align: center;
+  margin: 24px 0 12px 0;
+  position: relative;
+}
+
+.login_container {
+  padding: 16px;
+}
+
+/* The Close Button (x) */
+.login_close {
+  position: absolute;
+  right: 25px;
+  top: 0;
+  color: #000;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.login_close:hover,
+.login_close:focus {
+  color: red;
+  cursor: pointer;
+}
+
+/* background */
+.login_background {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding-top: 50px;
+}
+
+.login-content {
+  background-color: #fefefe;
+  margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+  border: 2px solid #AAAAAA;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.logout_button {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+.signup_button {
+  background-color: dodgerblue;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
 }
 
 /**********************************************************************/
 /*                              start menu                            */
 /**********************************************************************/
 
-#title{
+#title {
   font-family: times;
   font-size: 10vw;
   text-align: center;
   padding: 15vh 0;
   color: #40240F;
 }
-#startMenu{
+
+#startMenu {
   text-align: center;
 }
 
-.smNavButton{
+.smNavButton {
   background-color: #8B5934;
   border: none;
   border-radius: 10%;
@@ -35,11 +122,11 @@
   box-shadow: 0 1vw 2vw 0 #40240F;
 }
 
-.smNavButton:hover{
+.smNavButton:hover {
   background-color: #966541;
 }
 
-.smNavButton:active{
+.smNavButton:active {
   background-color: #966541;
 }
 
@@ -47,7 +134,7 @@
 /*                            vertical view                           */
 /**********************************************************************/
 
-#board{
+#board {
   border: 1vw solid #8B5934;
   border-radius: 3%;
   width: 75vw;
@@ -56,26 +143,26 @@
   z-index: 0;
 }
 
-.board_grid{
-  float:left;
+.board_grid {
+  float: left;
   position: absolute;
   width: 75vw;
   height: 40vh;
-  margin-left:14vw;
-  overflow:hidden;
+  margin-left: 14vw;
+  overflow: hidden;
   z-index: 1;
   bottom: 30vh;
 }
 
 .board_cell {
-  float:left;
+  float: left;
   /*position: absolute;*/
   width: 9.375vw;
   height: 5vh;
-  overflow:hidden;
+  overflow: hidden;
 }
 
-#player1info{
+#player1info {
   margin: 3vh auto 3vh 3vw;
 }
 
@@ -85,7 +172,7 @@
   vertical-align: middle;
 }
 
-#player2info{
+#player2info {
   margin: 10px 25px 25px auto;
   float: right;
 }
@@ -96,7 +183,7 @@
   vertical-align: middle;
 }
 
-.clock{
+.clock {
   color: #D4A079;
   border-radius: 10%;
   padding: 2vw;
@@ -107,33 +194,33 @@
   box-shadow: 0 1vw 2vw 0 #694225;
 }
 
-#clock1{
+#clock1 {
   margin-right: 3vw;
   width: 30vw;
 }
 
-#clock2{
+#clock2 {
   margin-left: 3vw;
   width: 30vw;
 }
 
-.user{
+.user {
   color: #9C6D4B;
   font-family: times;
   font-size: 5vw;
 }
 
-#user1{
+#user1 {
   margin: 10px auto 10px 30px;
   text-align: left;
 }
 
-#user2{
+#user2 {
   margin: 10px 30px 10px auto;
   text-align: right;
 }
 
-.avatar{
+.avatar {
   vertical-align: middle;
   width: 12%;
   color: #8B5934;
@@ -141,22 +228,22 @@
   border-radius: 5%;
 }
 
-.capPiece{
+.capPiece {
   vertical-align: middle;
   width: 8vw;
   position: relative;
   margin: 0 -2.25vw;
 }
 
-#blank{
+#blank {
   padding-bottom: 20vh;
 }
 
-#menus{
+#menus {
   display: inline-block;
 }
 
-#botSpacing{
+#botSpacing {
   height: 10vh;
 }
 
@@ -175,7 +262,7 @@
   box-shadow: 0 0 4vw 0 #40240F;
 }
 
-.menuButton{
+.menuButton {
   background-color: #8B5934;
   border: none;
   color: #D4A079;
@@ -188,7 +275,7 @@
   box-shadow: 0 0 2vw 0 #694225;
 }
 
-.botMenu .closeMenu{
+.botMenu .closeMenu {
   position: absolute;
   color: #D4A079;
   padding: 2vh 5vh;
@@ -196,54 +283,60 @@
   text-decoration: none;
   font-size: 10vw;
 }
-.botMenu .closeMenu:hover{
+
+.botMenu .closeMenu:hover {
   color: #E3C4AC;
 }
 
-#mmButtons{
+#mmButtons {
   padding-top: 30%;
 }
 
-#notTable{
+#notTable {
   width: 80%;
   margin: 15% auto;
   height: 80%;
   box-shadow: 0 1vw 2vw 0 #40240F;
   font-family: times;
 }
-#notTableHead{
+
+#notTableHead {
   width: 100%;
-  background-color:#40240F;
+  background-color: #40240F;
   color: #D4A079;
   font-size: 18px;
   vertical-align: middle;
 }
-#notTableRows{
+
+#notTableRows {
   width: 100%;
   color: #40240F;
   font-size: 16px;
   vertical-align: middle;
   border: 1px solid #40240F;
 }
-#notTableRows td{
+
+#notTableRows td {
   vertical-align: middle;
 }
-#notTableRows tr:nth-child(odd){
+
+#notTableRows tr:nth-child(odd) {
   background-color: #D4A079;
   height: 30px;
   vertical-align: middle;
 }
-#notTableRows tr:nth-child(even){
+
+#notTableRows tr:nth-child(even) {
   background-color: #E3C4AC;
   height: 30px;
   vertical-align: middle;
 }
 
-.tableScroll{
+.tableScroll {
   overflow-y: scroll;
 }
 
-.mmNavButton{
+.mmNavButton {
   background-color: #D4A079;
   border: none;
   border-radius: 10%;
@@ -257,17 +350,28 @@
   box-shadow: 0 1vw 2vw 0 #40240F;
 }
 
-.mmNavButton:hover{
+.mmNavButton:hover {
   background-color: #E3C4AC;
 }
 
-.mmNavButton:active{
+.mmNavButton:active {
   background-color: #E3C4AC;
 }
 
-::-webkit-scrollbar{
+::-webkit-scrollbar {
   width: 5px;
 }
-::-webkit-scrollbar-thumb{
+
+::-webkit-scrollbar-thumb {
   background-color: #381E0B;
+}
+
+/**********************************************************************/
+/*                                global                              */
+/**********************************************************************/
+.debug {
+  position: fixed;
+  bottom: 0;
+  padding: 1rem;
+  text-align: center;
 }
