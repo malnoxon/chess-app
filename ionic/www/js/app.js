@@ -61,6 +61,8 @@ angular.module('starter', ['ionic', 'firebase'])
 
   .controller('startCtrl', function ($scope, $state, Auth) {
 
+
+
     //TODO: save user login token in local data (automatic login)
 
     if (firebase.auth().currentUser) {
@@ -207,7 +209,7 @@ angular.module('starter', ['ionic', 'firebase'])
           "col": new_col
         };
 
-        if ($scope.legalMove(orig, dest)) {
+        if ($scope.legalMove(orig, dest) && $scope.board[old_row][old_col].color == $scope.toMove && $scope.human_turn == true) {
           if ($scope.board[new_row][new_col] != "") {
             if ($scope.board[new_row][new_col].color == "white") {
               $scope.capturedPieces1.push($scope.board[new_row][new_col]);
@@ -218,7 +220,24 @@ angular.module('starter', ['ionic', 'firebase'])
 
           $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
           $scope.board[old_row][old_col] = "";
+          if($scope.toMove == "white") {
+            //TODO: queening/castling/enpassant
+            $scope.notation.push([$scope.moveToUCINotation(orig, dest, null), '']);
+            $scope.toMove = 'black';
+            console.log($scope.notation);
+          } else {
+            $scope.notation[$scope.notation.length-1][1] = $scope.moveToUCINotation(orig, dest, null);
+            $scope.toMove = 'white';
+            console.log($scope.notation);
+          }
 
+          $scope.human_turn = false;
+          $scope.computerMove();
+
+          // $scope.notation = [["e2e4", "e7e5"], ["g1f3", "b8c6"]];
+
+        } else if($scope.human_turn == false) {
+          console.log("Not human's turn");
         } else {
           console.log("Illegal move");
         }
@@ -235,15 +254,8 @@ angular.module('starter', ['ionic', 'firebase'])
       }
     }
 
-    $scope.notation = [["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"],
-      ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", "a6"], ["e4", "e5"], ["Nf3", "Nc6"], ["Bb5", ""]];
+    $scope.notation = [];
+    $scope.toMove = "white";
 
     $scope.capturedPieces1 = [];
     $scope.capturedPieces2 = [];
@@ -306,28 +318,38 @@ angular.module('starter', ['ionic', 'firebase'])
     };
 
     /**
-     *
      * @param orig - dictionary of piece, row, and col of piece you want to move (keys are piece, row, col)
      * @param dest - dictionary of piece, row, and col of where you want to move (keys are piece, row, col)
-     * @returns the move to be entered in Long Algebraic Notation
+     * @returns string move to be entered in Long Algebraic Notation
      * NOTE: this function is for communicating with the AI, some modifications will be needed for the displayed notation
+     * http://wbec-ridderkerk.nl/html/UCIProtocol.html
      */
-    $scope.moveToLAN = function (orig, dest, queened_to) {
+    $scope.moveToUCINotation = function (orig, dest, queened_to) {
       var move = "";
-      var piece_symbols = {"Knight": "K", "Bishop": "B", "Rook": "R", "Queen": "Q", "King": "K", "Pawn": ""};
+      var piece_symbols = {"Knight": "k", "Bishop": "b", "Rook": "r", "Queen": "q", "King": "k", "Pawn": ""};
       var col_letters = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
       // var connecting_char = "-";
       // if(dest.piece != null) {
       //   connecting_char = "x";
       // }
-      move.concat(piece_symbols[orig.piece.type], (orig.row + 1).toString(), col_letters[orig.col], piece_symbols[dest.piece.type], (dest.row + 1).toString(), col_letters[dest.col]);
+      // move.concat(piece_symbols[orig.piece.type], (orig.row + 1).toString(), col_letters[orig.col], piece_symbols[dest.piece.type], (dest.row + 1).toString(), col_letters[dest.col]);
+
+      // A nullmove from the Engine to the GUI should be send as 0000.
+      // Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+      var promotion_val = '';
+      if(queened_to != null) {
+        var promotion_val = queened_to;
+      }
+      move = move.concat(col_letters[orig.col], (8 - orig.row).toString(), col_letters[dest.col], (8 - dest.row).toString(), promotion_val);
 
       if (queened_to != null) {
         move.concat("=", piece_symbols[queened_to.type]);
       }
 
       return move;
-    }
+    };
+
+
 
     /**
      *
@@ -472,4 +494,40 @@ angular.module('starter', ['ionic', 'firebase'])
       return false;
     }
 
+    $scope.computerMove = function() {
+      var search_timelimit = 1000;
+
+      console.log($scope.notation);
+      var notation_arr = [].concat.apply([],$scope.notation);
+      var notation_str = notation_arr.join(' ');
+
+      stockfish.postMessage('position startpos moves ' + notation_str);
+      stockfish.postMessage('go movetime ' + search_timelimit);
+      var best_move = '';
+      stockfish.onmessage = function(event) {
+        if(event.data.startsWith('bestmove')) {
+          best_move = event.data.split(' ')[1];
+          console.log('BEST MOVE IS ' + best_move);
+          var col_letters = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7};
+          var from_y = col_letters[best_move[0]];
+          var from_x = 8 - best_move[1];
+          var to_y = col_letters[best_move[2]];
+          var to_x = 8 - best_move[3];
+          $scope.board[to_x][to_y] = $scope.board[from_x][from_y];
+          $scope.board[from_x][from_y] = '';
+          $scope.notation.push([best_move, '']);
+          console.log($scope.notation);
+          if($scope.toMove == 'white') {
+            $scope.toMove = 'black';
+          } else {
+            $scope.toMove = 'white';
+          }
+          $scope.human_turn = true;
+        }
+      }
+    };
+
+    var stockfish = new Worker('js/stockfish.js');
+    $scope.human_turn = false;
+    $scope.computerMove();
   });
