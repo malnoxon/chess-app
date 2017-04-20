@@ -75,35 +75,39 @@
         <div id="startMenu" ng-controller="startCtrl">
           <button class="smNavButton" ng-click="login_popup()"> {{currentState}}</button>
 
-          <div id="login_popup" class="login_background" style="display:block">
-            <form class="login-content">
-              <div class="login_outer_container">
-                <span ng-click='popup_close()' class="login_close" title="login_close">&times;</span>
+          <div id="login_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <div class="loader_frame" id="loader">
+                  <div class="loader"></div>
+                </div>
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
                 <label><b>Username</b></label>
                 <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
 
                 <label><b>Password</b></label>
                 <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
-                <button ng-click="login()" class="login_submit"> Login</button>
+                <div id='error_message'></div>
+                <button ng-click="login()" class="popup_submit"> Login</button>
                 <input type="checkbox" checked="checked"> Remember me
                 <br>
                 <label> Don't have an account? </label>
                 <button ng-click="signup_popup()" class="button-balanced"> Signup!</button>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
                 <span> Forgot <a href="#">password?</a></span>
               </div>
             </form>
           </div>
 
-          <div id="signup_popup" class="login_background">
-            <form class="login-content">
-              <div class="login_outer_container">
-                <span ng-click='popup_close()' class="login_close" title="login_close">&times;</span>
+          <div id="signup_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
                 <label><b>Email</b></label>
                 <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
 
@@ -111,21 +115,21 @@
                 <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
                 <button ng-click="signup()" class="signup_button"> Signup!</button>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
               </div>
             </form>
           </div>
 
-          <div id="logged_in_popup" class="login_background">
-            <form class="login-content">
-              <div class="login_outer_container">
-                <span ng-click='popup_close()' class="login_close" title="login_close">&times;</span>
+          <div id="logged_in_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
                 <label><b>You are logged in as {{userName}}.</b></label>
                 <button ng-click="logout()" class="logout_button"><b>Logout?</b></button>
               </div>
-              <div class="login_container">
+              <div class="popup_container">
               </div>
             </form>
           </div>
@@ -142,6 +146,62 @@
 
 <script id="templates/vert.html" type="text/ng-template">
   <ion-view view-title="Vertical View">
+    <div > ng-controller="vertCtrl">
+
+      <div id="cont_game_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+
+            <p></p>
+            <h5> You already have a game in progress! </h5>
+            <button ng-click="stockFish_popup()"> New Game</button>
+            <button ng-click="load_game()"> Continue Game</button>
+          </div>
+        </form>
+      </div>
+
+
+      <div id="stockFish_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+            <p></p>
+            <h4 align="center"> Stockfish Settings </h4>
+            <br>
+
+            <label for="selectColor"> Play as: </label>
+            <select id="selectColor" ng-init="selectedColor = select_colors[0].value" ng-model="selectedColor" ng-options="color.value as color.name for color in select_colors">
+            </select>
+
+            <br>
+            <br>
+            <label for="selectSkill"> AI Strength: </label>
+            <select id="selectSkill" ng-init="selectedSkill = select_skill[3].value" ng-model="selectedSkill" ng-options="skill.value as skill.name for skill in select_skill">
+            </select>
+            <br>
+            <br>
+            <!--
+            <label for="player_time"> Your time: </label>
+            <select ng-model="player_time" id="player_time">
+              <option>.</option>
+            </select>
+            <br>
+            <br>
+            <label for="computer_time"> Computer time: </label>
+            <select ng-model="player2_time" id="computer_time">
+              <option>.</option>
+            </select>
+            -->
+            <button ng-click="popup_close()"> Create Game</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <ion-content class="background">
       <div>
         <div id="player1info">

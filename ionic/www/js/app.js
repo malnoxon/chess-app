@@ -61,15 +61,17 @@ angular.module('starter', ['ionic', 'firebase'])
 
   .controller('startCtrl', function ($scope, $state, Auth) {
 
+    $scope.user;
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) {
+        $scope.user = user;
+        $scope.currentState = "Logout"
+      } else {
+        $scope.currentState = "login"
+        $scope.login_popup();
+      }
 
-
-    //TODO: save user login token in local data (automatic login)
-
-    if (firebase.auth().currentUser) {
-      $scope.currentState = "Logout"
-    } else {
-      $scope.currentState = "login"
-    }
+    });
 
     $scope.login_popup = function () {
       $scope.popup_close(); //reset
@@ -90,6 +92,23 @@ angular.module('starter', ['ionic', 'firebase'])
     }
 
 
+    var startup = true;
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        $scope.currentState = "Logout"
+        $scope.userName = firebase.auth().currentUser.email;
+        $scope.$apply();
+      } else {
+        if (startup) {
+          //$scope.login_popup();
+        }
+        $scope.currentState = "Login"
+        $scope.$apply();
+      }
+      startup = false;
+      startup = false;
+    });
+
     // for testing
     $scope.username = "test_user@yahoo.com";
     $scope.password = "password";
@@ -97,18 +116,40 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.login = function () {
 
       console.log("clicked login button")
+      document.getElementById('loader').style.display = 'block';
       Auth.$signInWithEmailAndPassword($scope.username, $scope.password)
         .then(function (firebaseUser) {
           console.log("User logged in!!! Userid:" + firebaseUser.uid);
-          alert("Successfully signed in");
           $scope.currentState = "Logout"
           $scope.userName = firebase.auth().currentUser.email;
           $scope.popup_close()
         })
         .catch(function (error) {
-          console.log("Sign in failure!!! " + $scope.username + " " + error)
+          document.getElementById('error_message').innerHTML= error;
+          setTimeout(function() {document.getElementById('error_message').innerHTML='';},5000);
+        })
+        .finally(function() {
+          document.getElementById('loader').style.display = 'none';
         })
     }
+
+    // $scope.google_login = function() {
+    //   document.getElementById('loader').style.display = 'block';
+    //   var provider = new firebase.auth.GoogleAuthProvider();
+    //   firebase.auth().signInWithRedirect(provider);
+    //   $scope.currentState="Logout"
+    //   firebase.auth().getRedirectResult().then(function(result) {
+    //     if (result.credential) {
+    //       var token = result.credential.accessToken;
+    //     }
+    //   }).catch(function(error) {
+    //     console.log(error)
+    //   }).finally(function() {
+    //     document.getElementById('loader').style.display = 'none';
+    //   })
+    //
+    // }
+
 
     $scope.logout = function () {
       firebase.auth().signOut()
@@ -131,6 +172,14 @@ angular.module('starter', ['ionic', 'firebase'])
           $scope.currentState = "Logout";
           $scope.userName = firebase.auth().currentUser.email;
           $scope.$apply();
+
+          // Add user to user database
+          var user = firebase.auth().currentUser;
+          firebase.database().ref('users/' + user.uid).set({
+            username: user.displayName,
+            email: user.email
+          })
+
           $scope.popup_close();
         })
         .catch(function (error) {
@@ -180,10 +229,134 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.avatar1 = "img/duckie.png";
     $scope.avatar2 = "img/ellie.png";
 
-    $scope.color1 = "white";
-    $scope.color2 = "black";
+    //$scope.color1 = "black";
+    //$scope.color2 = "white";
+
+    $scope.notation = [];
+    $scope.toMove = "white"
+
+    $scope.capturedPieces1 = [];
+    $scope.capturedPieces2 = [];
+
+    $scope.time1 = "5:00";
+    $scope.time2 = "1:20:00";
+
+    $scope.board = [
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ];
+
+    $scope.select_colors = [
+      {value: 'black', name: "black"},
+      {value: 'white', name: "white"}];
+
+    $scope.select_skill = [
+      {value: 5, name: "5"},
+      {value: 10, name: "10"},
+      {value: 15, name: "15"},
+      {value: 20, name: "20"}];
+
+    $scope.opponent = {username: $scope.username1, avatar: $scope.avatar1, color: "", captured: $scope.capturedPieces1};
+    $scope.player = {username: $scope.username2, avatar: $scope.avatar2, color: "", captured: $scope.capturedPieces2};
 
     $scope.appearance = 1;
+
+    $scope.stockFish_popup = function () {
+      if($scope.user) {
+        //clear single_player_Game database
+          firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").set(null);
+
+      }
+      document.getElementById('stockFish_popup').style.display = 'block';
+    }
+
+    $scope.cont_game_popup = function() {
+      document.getElementById('cont_game_popup').style.display = 'block';
+    }
+
+    $scope.setStockFish = function() {
+      $scope.player.color = $scope.selectedColor;
+      if ($scope.player.color == 'white') {
+        $scope.opponent.color = "black";
+      } else {
+        $scope.opponent.color = "white";
+      }
+      stockfish.postMessage('setoption name Skill Level value ' + $scope.selectedSkill);
+    }
+
+    $scope.popup_close = function () {
+      document.getElementById('stockFish_popup').style.display = 'none';
+      document.getElementById('cont_game_popup').style.display = 'none';
+      $scope.setStockFish();
+
+
+      if($scope.opponent.color == "white") {
+        $scope.computerMove();
+      }
+    }
+
+
+    //Check if user already has a game in progress
+    var load_game = null;
+    firebase.auth().onAuthStateChanged(function (user) {
+      $scope.user = user
+      if ($scope.user) {
+        console.log("user is valid for database access");
+
+        firebase.database().ref('users/' + $scope.user.uid).once("value")
+          .then(function (snapshot) {
+            try {
+              load_game = snapshot.val().single_player_Game;
+              if (load_game) {
+                $scope.cont_game_popup();
+              } else {
+                $scope.stockFish_popup();
+              }
+            } catch (error) {
+              console.log(error);
+            }
+            if (!load_game) {
+              $scope.stockFish_popup();
+            }
+          })
+      } else {
+        $scope.stockFish_popup();
+      }
+    });
+
+
+    $scope.load_game = function() {
+      document.getElementById('cont_game_popup').style.display = 'none';
+      var load_notation = load_game.notation;
+      $scope.player.color = load_game.color;
+
+      if ($scope.player.color == "white") {
+        $scope.opponent.color = "black";
+      } else if ($scope.player.color == "black"){
+        $scope.opponent.color = "white"
+      }
+
+      for (var i=0; i < load_notation.length; i++) {
+        $scope.UCItoMove(load_notation[i][0], "white");
+        $scope.toMove = "black"
+        if (load_notation[i][1]) {
+          $scope.UCItoMove(load_notation[i][1], "black");
+          $scope.toMove = "white"
+        }
+      }
+      $scope.notation = load_notation;
+
+      if ($scope.toMove == $scope.opponent.color) {
+        $scope.computerMove();
+      }
+    };
+
 
     var selected_cell = -1;
 
@@ -191,6 +364,7 @@ angular.module('starter', ['ionic', 'firebase'])
       if (selected_cell == -1) {
         selected_cell = n;
       } else {
+
         var new_row = Math.floor(n / 8);
         var new_col = n % 8;
 
@@ -209,39 +383,34 @@ angular.module('starter', ['ionic', 'firebase'])
           "col": new_col
         };
 
-        if ($scope.legalMove(orig, dest) && $scope.board[old_row][old_col].color == $scope.toMove && $scope.human_turn == true) {
-          if ($scope.board[new_row][new_col] != "") {
-            if ($scope.board[new_row][new_col].color == "white") {
-              $scope.capturedPieces1.push($scope.board[new_row][new_col]);
-            } else {
-              $scope.capturedPieces2.push($scope.board[new_row][new_col]);
-            }
-          }
+        //console.log("toMove = " + $scope.toMove + " " + orig + " " + dest);
 
+        if ($scope.legalMove(orig, dest) && $scope.toMove == $scope.player.color) {
+          if ($scope.board[new_row][new_col] != "") {
+            $scope.player.captured.push($scope.board[new_row][new_col]);
+          }
           $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
           $scope.board[old_row][old_col] = "";
-          if($scope.toMove == "white") {
+
+          // player notation
+          if ($scope.player.color == "white") {
             //TODO: queening/castling/enpassant
             $scope.notation.push([$scope.moveToUCINotation(orig, dest, null), '']);
-            $scope.toMove = 'black';
-            console.log($scope.notation);
+            //console.log($scope.notation);
           } else {
-            $scope.notation[$scope.notation.length-1][1] = $scope.moveToUCINotation(orig, dest, null);
-            $scope.toMove = 'white';
-            console.log($scope.notation);
+            $scope.notation[$scope.notation.length - 1][1] = $scope.moveToUCINotation(orig, dest, null);
+            //console.log($scope.notation);
           }
 
-          $scope.human_turn = false;
+          $scope.toMove = $scope.opponent.color;
+
           $scope.computerMove();
 
-          // $scope.notation = [["e2e4", "e7e5"], ["g1f3", "b8c6"]];
-
-        } else if($scope.human_turn == false) {
-          console.log("Not human's turn");
-        } else {
-          console.log("Illegal move");
+          if ($scope.user) {
+            console.log("updating database");
+            firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").set({color: $scope.player.color, notation: $scope.notation});
+          }
         }
-
         selected_cell = -1;
       }
     };
@@ -254,64 +423,46 @@ angular.module('starter', ['ionic', 'firebase'])
       }
     }
 
-    $scope.notation = [];
-    $scope.toMove = "white";
+    function place_peices() {
+      // Black piece initial placement
+      $scope.board[0][0] = new Piece("Rook", "black");
+      $scope.board[0][1] = new Piece("Knight", "black");
+      $scope.board[0][2] = new Piece("Bishop", "black");
+      $scope.board[0][3] = new Piece("Queen", "black");
+      $scope.board[0][4] = new Piece("King", "black");
+      $scope.board[0][5] = new Piece("Bishop", "black");
+      $scope.board[0][6] = new Piece("Knight", "black");
+      $scope.board[0][7] = new Piece("Rook", "black");
 
-    $scope.capturedPieces1 = [];
-    $scope.capturedPieces2 = [];
+      $scope.board[1][0] = new Piece("Pawn", "black");
+      $scope.board[1][1] = new Piece("Pawn", "black");
+      $scope.board[1][2] = new Piece("Pawn", "black");
+      $scope.board[1][3] = new Piece("Pawn", "black");
+      $scope.board[1][4] = new Piece("Pawn", "black");
+      $scope.board[1][5] = new Piece("Pawn", "black");
+      $scope.board[1][6] = new Piece("Pawn", "black");
+      $scope.board[1][7] = new Piece("Pawn", "black");
 
-    $scope.time1 = "5:00";
-    $scope.time2 = "1:20:00";
+      // White piece initial placement
+      $scope.board[7][0] = new Piece("Rook", "white");
+      $scope.board[7][1] = new Piece("Knight", "white");
+      $scope.board[7][2] = new Piece("Bishop", "white");
+      $scope.board[7][3] = new Piece("Queen", "white");
+      $scope.board[7][4] = new Piece("King", "white");
+      $scope.board[7][5] = new Piece("Bishop", "white");
+      $scope.board[7][6] = new Piece("Knight", "white");
+      $scope.board[7][7] = new Piece("Rook", "white");
 
-    $scope.board = [
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-      ["", "", "", "", "", "", "", ""],
-    ];
-
-    // Black piece initial placement
-    $scope.board[0][0] = new Piece("Rook", "black");
-    $scope.board[0][1] = new Piece("Knight", "black");
-    $scope.board[0][2] = new Piece("Bishop", "black");
-    $scope.board[0][3] = new Piece("Queen", "black");
-    $scope.board[0][4] = new Piece("King", "black");
-    $scope.board[0][5] = new Piece("Bishop", "black");
-    $scope.board[0][6] = new Piece("Knight", "black");
-    $scope.board[0][7] = new Piece("Rook", "black");
-
-    $scope.board[1][0] = new Piece("Pawn", "black");
-    $scope.board[1][1] = new Piece("Pawn", "black");
-    $scope.board[1][2] = new Piece("Pawn", "black");
-    $scope.board[1][3] = new Piece("Pawn", "black");
-    $scope.board[1][4] = new Piece("Pawn", "black");
-    $scope.board[1][5] = new Piece("Pawn", "black");
-    $scope.board[1][6] = new Piece("Pawn", "black");
-    $scope.board[1][7] = new Piece("Pawn", "black");
-
-    // White piece initial placement
-    $scope.board[7][0] = new Piece("Rook", "white");
-    $scope.board[7][1] = new Piece("Knight", "white");
-    $scope.board[7][2] = new Piece("Bishop", "white");
-    $scope.board[7][3] = new Piece("Queen", "white");
-    $scope.board[7][4] = new Piece("King", "white");
-    $scope.board[7][5] = new Piece("Bishop", "white");
-    $scope.board[7][6] = new Piece("Knight", "white");
-    $scope.board[7][7] = new Piece("Rook", "white");
-
-    $scope.board[6][0] = new Piece("Pawn", "white");
-    $scope.board[6][1] = new Piece("Pawn", "white");
-    $scope.board[6][2] = new Piece("Pawn", "white");
-    $scope.board[6][3] = new Piece("Pawn", "white");
-    $scope.board[6][4] = new Piece("Pawn", "white");
-    $scope.board[6][5] = new Piece("Pawn", "white");
-    $scope.board[6][6] = new Piece("Pawn", "white");
-    $scope.board[6][7] = new Piece("Pawn", "white");
-
+      $scope.board[6][0] = new Piece("Pawn", "white");
+      $scope.board[6][1] = new Piece("Pawn", "white");
+      $scope.board[6][2] = new Piece("Pawn", "white");
+      $scope.board[6][3] = new Piece("Pawn", "white");
+      $scope.board[6][4] = new Piece("Pawn", "white");
+      $scope.board[6][5] = new Piece("Pawn", "white");
+      $scope.board[6][6] = new Piece("Pawn", "white");
+      $scope.board[6][7] = new Piece("Pawn", "white");
+    }
+    place_peices();
 
     $scope.getBoard = function () {
       return [].concat.apply([], $scope.board);
@@ -349,7 +500,25 @@ angular.module('starter', ['ionic', 'firebase'])
       return move;
     };
 
+    $scope.UCItoMove = function(move, color) {
+      var move_split = move.split("");
+      var charToInt = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7}
+      var intToInt = {8:0, 7:1, 6:2, 5:3, 4:4, 3:5, 2:6, 1:7};
+      var old_x = charToInt[move_split[0]];
+      var old_y = intToInt[move_split[1]];
+      var new_x = charToInt[move_split[2]];
+      var new_y = intToInt[move_split[3]];
 
+      if($scope.board[new_y][new_x] != "") {
+        if (color == $scope.player.color) {
+          $scope.player.captured.push($scope.board[new_y][new_x]);
+        } else {
+          $scope.opponent.captured.push($scope.board[new_y][new_x]);
+        }
+      }
+      $scope.board[new_y][new_x] = $scope.board[old_y][old_x];
+      $scope.board[old_y][old_x] = "";
+    }
 
     /**
      *
@@ -497,7 +666,6 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.computerMove = function() {
       var search_timelimit = 1000;
 
-      console.log($scope.notation);
       var notation_arr = [].concat.apply([],$scope.notation);
       var notation_str = notation_arr.join(' ');
 
@@ -513,21 +681,28 @@ angular.module('starter', ['ionic', 'firebase'])
           var from_x = 8 - best_move[1];
           var to_y = col_letters[best_move[2]];
           var to_x = 8 - best_move[3];
+          if ($scope.board[to_x][to_y] != "") {
+            $scope.opponent.captured.push($scope.board[to_x][to_y]);
+          }
           $scope.board[to_x][to_y] = $scope.board[from_x][from_y];
           $scope.board[from_x][from_y] = '';
-          $scope.notation.push([best_move, '']);
-          console.log($scope.notation);
-          if($scope.toMove == 'white') {
-            $scope.toMove = 'black';
+          if ($scope.opponent.color == "white") {
+            //TODO: queening/castling/enpassant
+            $scope.notation.push([best_move, '']);
           } else {
-            $scope.toMove = 'white';
+            $scope.notation[$scope.notation.length - 1][1] = best_move;
+            //console.log($scope.notation);
           }
+          $scope.toMove = $scope.player.color;
+
           $scope.human_turn = true;
+          $scope.$apply();
+
         }
       }
     };
 
     var stockfish = new Worker('js/stockfish.js');
-    $scope.human_turn = false;
-    $scope.computerMove();
+
+
   });
