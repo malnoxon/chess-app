@@ -268,6 +268,7 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.appearance = 1;
     $scope.last_move_en_passant = false;
+    $scope.promoting_to = "Queen";
 
     $scope.stockFish_popup = function () {
       if($scope.user) {
@@ -409,6 +410,12 @@ angular.module('starter', ['ionic', 'firebase'])
           $scope.board[old_row][old_col] = "";
           $scope.board[new_row][new_col].hasMoved = true;
 
+          if(orig.piece == "Pawn" &&
+            (orig.piece.color == "black" && dest.row == 7) || (orig.piece.color == "white" && dest.row == 0)) {
+            //TODO: set $scope.promoting_to in GUI somehow
+            $scope.board[new_row][new_col] = new Piece($scope.promoting_to, orig.piece.color);
+          }
+
           // Castling special cases
           if(this_move == 'e1g1') {
             $scope.board[7][5] = $scope.board[7][7];
@@ -517,13 +524,13 @@ angular.module('starter', ['ionic', 'firebase'])
       // Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
       var promotion_val = '';
       if(queened_to != null) {
-        var promotion_val = queened_to;
+        var promotion_val = queened_to.toLowerCase();
       }
       move = move.concat(col_letters[orig.col], (8 - orig.row).toString(), col_letters[dest.col], (8 - dest.row).toString(), promotion_val);
 
-      if (queened_to != null) {
-        move.concat("=", piece_symbols[queened_to.type]);
-      }
+      // if (queened_to != null) {
+      //   move.concat("=", piece_symbols[queened_to.type]);
+      // }
 
       return move;
     };
@@ -628,7 +635,6 @@ angular.module('starter', ['ionic', 'firebase'])
      */
     $scope.legalMove = function (orig, dest, board, determine_check) {
 
-      //TODO: Check if player is moving into check
       if(determine_check) {
         var new_board = $scope.arrayClone(board);
         new_board = $scope.makeMove(new_board, orig, dest);
@@ -753,7 +759,6 @@ angular.module('starter', ['ionic', 'firebase'])
           return true;
         }
 
-
         // MOVE QUEEN
       } else if (orig.piece.type == ("Queen")) {
         // Should be same value as legal move of rook || bishop
@@ -769,7 +774,6 @@ angular.module('starter', ['ionic', 'firebase'])
           "col": orig.col
         };
         return ($scope.legalMove(rook_orig, dest, board, determine_check) || $scope.legalMove(bish_orig, dest, board, determine_check));
-
 
         // MOVE KING
       } else if (orig.piece.type == ("King")) {
@@ -819,9 +823,6 @@ angular.module('starter', ['ionic', 'firebase'])
             }
           }
         }
-
-        //TODO: NEED TO HANDLE CASTLING RULES
-
       } else {
         console.log("ERROR: Type does not exist")
         console.log(new Error().stack);
@@ -862,6 +863,34 @@ angular.module('starter', ['ionic', 'firebase'])
             $scope.notation[$scope.notation.length - 1][1] = best_move;
             //console.log($scope.notation);
           }
+
+          if($scope.board[to_y][to_x].piece == "Pawn" &&
+            ($scope.opponent.color == "black" && to_y == 7) || ($scope.opponent.color == "white" && to_y == 0)) {
+            //TODO: set $scope.promoting_to in GUI somehow
+            var promoting_to = best_move[4];
+            var symbol_to_names = {"q": "Queen", "r": "Rook", "n": "Knight", "b": "Bishop"};
+            $scope.board[to_y][to_x] = new Piece(symbol_to_names[promoting_to], $scope.opponent.color);
+          }
+
+          // Castling special cases
+          if(best_move == 'e1g1') {
+            $scope.board[7][5] = $scope.board[7][7];
+            $scope.board[7][7] = "";
+          } else if(best_move == 'e1c1') {
+            $scope.board[7][3] = $scope.board[7][0];
+            $scope.board[7][0] = "";
+          } else if(best_move == 'e8g8') {
+            $scope.board[0][5] = $scope.board[0][7];
+            $scope.board[0][7] = "";
+          } else if(best_move == 'e8c8') {
+            $scope.board[0][3] = $scope.board[0][0];
+            $scope.board[0][0] = "";
+          }
+
+          // En passant special case
+          if($scope.last_move_en_passant) {
+            $scope.board[from_y][to_x] = "";
+          }
           $scope.toMove = $scope.player.color;
 
           $scope.human_turn = true;
@@ -872,6 +901,4 @@ angular.module('starter', ['ionic', 'firebase'])
     };
 
     var stockfish = new Worker('js/stockfish.js');
-
-
   });
