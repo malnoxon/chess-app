@@ -197,6 +197,7 @@ angular.module('starter', ['ionic', 'firebase'])
       this.type = type;
       this.color = color;
       this.isCaptured = false;
+      this.hasMoved = false;
 
       if (this.type == "Pawn") {
         this.value = 1;
@@ -266,6 +267,7 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.player = {username: $scope.username2, avatar: $scope.avatar2, color: "", captured: $scope.capturedPieces2};
 
     $scope.appearance = 1;
+    $scope.last_move_en_passant = false;
 
     $scope.stockFish_popup = function () {
       if($scope.user) {
@@ -385,22 +387,48 @@ angular.module('starter', ['ionic', 'firebase'])
 
         //console.log("toMove = " + $scope.toMove + " " + orig + " " + dest);
 
+        $scope.last_move_en_passant = false;
         if ($scope.legalMove(orig, dest, $scope.board, true) && $scope.toMove == $scope.player.color) {
           if ($scope.board[new_row][new_col] != "") {
             $scope.player.captured.push($scope.board[new_row][new_col]);
           }
-          $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
-          $scope.board[old_row][old_col] = "";
 
           // player notation
+          var this_move = $scope.moveToUCINotation(orig, dest, null);
           if ($scope.player.color == "white") {
             //TODO: queening/castling/enpassant
-            $scope.notation.push([$scope.moveToUCINotation(orig, dest, null), '']);
+            $scope.notation.push([this_move, '']);
             //console.log($scope.notation);
           } else {
-            $scope.notation[$scope.notation.length - 1][1] = $scope.moveToUCINotation(orig, dest, null);
+            $scope.notation[$scope.notation.length - 1][1] = this_move;
             //console.log($scope.notation);
           }
+
+          //Adjust board state
+          $scope.board[new_row][new_col] = $scope.board[old_row][old_col];
+          $scope.board[old_row][old_col] = "";
+          $scope.board[new_row][new_col].hasMoved = true;
+
+          // Castling special cases
+          if(this_move == 'e1g1') {
+            $scope.board[7][5] = $scope.board[7][7];
+            $scope.board[7][7] = "";
+          } else if(this_move == 'e1c1') {
+            $scope.board[7][3] = $scope.board[7][0];
+            $scope.board[7][0] = "";
+          } else if(this_move == 'e8g8') {
+            $scope.board[0][5] = $scope.board[0][7];
+            $scope.board[0][7] = "";
+          } else if(this_move == 'e8c8') {
+            $scope.board[0][3] = $scope.board[0][0];
+            $scope.board[0][0] = "";
+          }
+
+          // En passant special case
+          if($scope.last_move_en_passant) {
+            $scope.board[old_row][new_col] = "";
+          }
+
 
           $scope.toMove = $scope.opponent.color;
 
@@ -550,21 +578,45 @@ angular.module('starter', ['ionic', 'firebase'])
         }
       }
       return board;
-      // return JSON.parse(JSON.stringify(arr));
+    };
 
-      // var i, copy;
-      //
-      // if( Array.isArray( arr ) ) {
-      //   copy = arr.slice( 0 );
-      //   for( i = 0; i < copy.length; i++ ) {
-      //     copy[ i ] = $scope.arrayClone( copy[ i ] );
-      //   }
-      //   return copy;
-      // } else if( typeof arr === 'object' ) {
-      //   throw 'Cannot clone array containing an object!';
-      // } else {
-      //   return arr;
-      // }
+    $scope.isInCheck = function(board, color) {
+      console.log("determining check");
+      var king_x = -1;
+      var king_y = -1;
+      // find king
+      for(var i = 0; i < board.length; i++) {
+        for (var j = 0; j < board[0].length; j++) {
+          if(board[i][j] != "" &&  board[i][j].type == "King" && board[i][j].color == color) {
+            king_x = j;
+            king_y = i;
+          }
+        }
+      }
+      // Iterate over all pieces and check if they can take the king, if so, this move is illegal
+      for(var i = 0; i < board.length; i++) {
+        for(var j = 0; j < board[0].length; j++) {
+          if(board[i][j] != "" && board[i][j].color != color) {
+            var king_loc = {
+              "piece": new Piece("King", color),
+              "row": king_y,
+              "col": king_x
+            };
+            var attacking_piece_loc = {
+              "piece": board[i][j],
+              "row": i,
+              "col": j
+            };
+            console.log(king_loc);
+            console.log(attacking_piece_loc);
+            if($scope.legalMove(attacking_piece_loc, king_loc, board, false)) {
+              console.log("move not valid cause king in check");
+              return true;
+            }
+          }
+        }
+      }
+      return false;
     };
 
     /**
@@ -578,50 +630,15 @@ angular.module('starter', ['ionic', 'firebase'])
 
       //TODO: Check if player is moving into check
       if(determine_check) {
-        console.log("determining check");
-        var king_x = -1;
-        var king_y = -1;
         var new_board = $scope.arrayClone(board);
         new_board = $scope.makeMove(new_board, orig, dest);
-        // find king
-        for(var i = 0; i < new_board.length; i++) {
-          for (var j = 0; j < new_board[0].length; j++) {
-            if(new_board[i][j] != "" &&  new_board[i][j].type == "King" && new_board[i][j].color == orig.piece.color) {
-              king_x = j;
-              king_y = i;
-            }
-          }
-        }
-        // Iterate over all pieces and check if they can take the king, if so, this move is illegal
-        for(var i = 0; i < new_board.length; i++) {
-          for(var j = 0; j < new_board[0].length; j++) {
-            if(new_board[i][j] != "" && new_board[i][j].color != orig.piece.color) {
-              var king_loc = {
-                "piece": new Piece("King", orig.piece.color),
-                "row": king_y,
-                "col": king_x
-              };
-              var attacking_piece_loc = {
-                "piece": new_board[i][j],
-                "row": i,
-                "col": j
-              };
-              console.log(king_loc);
-              console.log(attacking_piece_loc);
-              if($scope.legalMove(attacking_piece_loc, king_loc, new_board, false)) {
-                console.log("move not valid cause king in check");
-                return false;
-              }
-            }
-          }
+        if($scope.isInCheck(new_board, orig.piece.color)) {
+          return false;
         }
       }
-
-
       // Normal piece movement:
 
       // MOVE PAWN
-      // TODO: also need en passant
       // TODO: also need queening?
       if (orig.piece.type == ("Pawn")) {
         var notation_arr = [].concat.apply([],$scope.notation);
@@ -643,6 +660,9 @@ angular.module('starter', ['ionic', 'firebase'])
           // En Passant
           if(last_move_from_y == 6 && last_move_to_y == 4 && board[to_y][to_x].type == ("Pawn") && orig.row == 4 && dest.row == 5 &&
             (orig.col == last_move_to_x + 1 || orig.col == to_x - 1) && dest.col == to_x) {
+            if(determine_check) {
+              $scope.last_move_en_passant = true;
+            }
             return true;
           }
 
@@ -656,6 +676,9 @@ angular.module('starter', ['ionic', 'firebase'])
             // En Passant
             if(last_move_from_y == 1 && last_move_to_y == 3 && board[to_y][to_x].type == ("Pawn") && orig.row == 3 && dest.row == 2 &&
               (orig.col == to_x + 1 || orig.col == to_x - 1) && dest.col == to_x) {
+              if(determine_check) {
+                $scope.last_move_en_passant = true;
+              }
               return true;
             }
           }
@@ -758,6 +781,43 @@ angular.module('starter', ['ionic', 'firebase'])
           if (columnDiff <= 1 && rowDiff <= 1) {
             return true;
           }
+
+          // check king in right spot (and that we aren't determining if a piece is in check, can't take a piece when castling
+          if(((orig.piece.color == "black" && orig.row == 0) || (orig.piece.color == "white" && orig.row == 7)) &&
+                orig.col == 4 && board[orig.row][orig.col].hasMoved == false && determine_check == true) {
+            // kingside
+            if(board[0][7] != "" && board[0][7].type == ("Rook") && board[0][7].hasMoved == false &&
+                board[0][5] == "" && board[0][6] == "") {
+              var new_board = $scope.arrayClone(board);
+              var in_between = {
+                "piece": new Piece("King", orig.piece.color),
+                "row": orig.row,
+                "col": 5
+              };
+              new_board = $scope.makeMove(new_board, orig, in_between);
+
+              // Can't castle if in check or moving through check (moving into check handled at beginning of function)
+              if(!$scope.isInCheck(board, orig.piece.color) && !$scope.isInCheck(new_board, orig.piece.color)) {
+                return true;
+              }
+            }
+            // queenside
+            if(board[0][0] != "" && board[0][0].type == ("Rook") && board[0][0].hasMoved == false &&
+                board[0][1] == "" && board[0][2] == "" && board[0][3] == "") {
+              var new_board = $scope.arrayClone(board);
+              var in_between = {
+                "piece": new Piece("King", orig.piece.color),
+                "row": orig.row,
+                "col": 3
+              };
+              new_board = $scope.makeMove(new_board, orig, in_between);
+
+              // Can't castle if in check or moving through check (moving into check handled at beginning of function)
+              if(!$scope.isInCheck(board, orig.piece.color) && !$scope.isInCheck(new_board, orig.piece.color)) {
+                return true;
+              }
+            }
+          }
         }
 
         //TODO: NEED TO HANDLE CASTLING RULES
@@ -766,7 +826,6 @@ angular.module('starter', ['ionic', 'firebase'])
         console.log("ERROR: Type does not exist")
         console.log(new Error().stack);
       }
-
 
       // default return false
       return false;
@@ -786,15 +845,16 @@ angular.module('starter', ['ionic', 'firebase'])
           best_move = event.data.split(' ')[1];
           console.log('BEST MOVE IS ' + best_move);
           var col_letters = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7};
-          var from_y = col_letters[best_move[0]];
-          var from_x = 8 - best_move[1];
-          var to_y = col_letters[best_move[2]];
-          var to_x = 8 - best_move[3];
-          if ($scope.board[to_x][to_y] != "") {
-            $scope.opponent.captured.push($scope.board[to_x][to_y]);
+          var from_x = col_letters[best_move[0]];
+          var from_y = 8 - best_move[1];
+          var to_x = col_letters[best_move[2]];
+          var to_y = 8 - best_move[3];
+          if ($scope.board[to_y][to_x] != "") {
+            $scope.opponent.captured.push($scope.board[to_y][to_x]);
           }
-          $scope.board[to_x][to_y] = $scope.board[from_x][from_y];
-          $scope.board[from_x][from_y] = '';
+          $scope.board[to_y][to_x] = $scope.board[from_y][from_x];
+          $scope.board[from_y][from_x] = '';
+          $scope.board[to_y][to_x].hasMoved = true;
           if ($scope.opponent.color == "white") {
             //TODO: queening/castling/enpassant
             $scope.notation.push([best_move, '']);
