@@ -84,8 +84,8 @@
                 <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
               </div>
               <div class="popup_container">
-                <label><b>Username</b></label>
-                <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
+                <label><b>Email</b></label>
+                <input type="text" placeholder="Enter Email" name="email" ng-model="email" required>
 
                 <label><b>Password</b></label>
                 <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
@@ -109,10 +109,14 @@
               </div>
               <div class="popup_container">
                 <label><b>Email</b></label>
-                <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
+                <input type="text" placeholder="Enter Email" name="email" ng-model="email" required>
 
                 <label><b>Password</b></label>
                 <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
+
+                <label><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
+
                 <button ng-click="signup()" class="signup_button"> Signup!</button>
               </div>
               <div class="popup_container">
@@ -134,7 +138,7 @@
             </form>
           </div>
 
-          <button class="smNavButton">Multiplayer</button>
+          <button class="smNavButton" ng-click="multiPlayer()">Multiplayer</button>
           <button class="smNavButton" ng-click="singlePlayer()">Single Player</button>
           <button class="smNavButton">Analysis</button>
           <button class="smNavButton">Settings</button>
@@ -147,6 +151,24 @@
 <script id="templates/vert.html" type="text/ng-template">
   <ion-view view-title="Vertical View">
     <div > ng-controller="vertCtrl">
+
+      <div id="multiPlayer_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+
+            <p></p>
+            <h5> This is the multiPlayer popup window! </h5>
+            <button ng-click="setMultiPlayer()"> Create Game </button>
+            <label for="selectGame"> Select a game ID: </label>
+            <select id="selectGame" ng-init="gameID = select_game[0].value" ng-model="gameID" ng-options="game.value as game.name for game in select_game">
+            </select>
+            <button ng-click="joinMultiPlayer()"> Join Game </button>
+          </div>
+        </form>
+      </div>
 
       <div id="cont_game_popup" class="popup_background">
         <form class="popup-content">
