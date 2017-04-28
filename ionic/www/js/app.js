@@ -453,7 +453,7 @@ angular.module('starter', ['ionic', 'firebase'])
             ref.update(
               {
                 Agent1: $scope.user.uid,
-                player2: player
+                player1: player
               })
           } else {
             console.log("ERROR")
