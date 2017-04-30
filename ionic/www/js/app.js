@@ -667,6 +667,10 @@ angular.module('starter', ['ionic', 'firebase'])
 
     var selected_cell = -1;
     $scope.cell_clicked = function (n) {
+      if ($scope.player.color === "black"){
+        n = 63 - n;
+      }
+
       if (selected_cell == -1) {
         selected_cell = n;
 
@@ -832,7 +836,13 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.place_peices();
 
     $scope.getBoard = function () {
-      return [].concat.apply([], $scope.board);
+      var b = [].concat.apply([], $scope.board);
+
+      if ($scope.player.color === "black") {
+        b.reverse();
+      }
+
+      return b;
     };
 
     /**
