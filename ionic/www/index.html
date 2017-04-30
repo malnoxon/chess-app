@@ -1,157 +1,330 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title></title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <title></title>
 
-    <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">
 
-    <!-- un-comment this code to enable service worker
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(() => console.log('service worker installed'))
-          .catch(err => console.log('Error', err));
-      }
-    </script>-->
+  <!-- un-comment this code to enable service worker
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('service worker installed'))
+        .catch(err => console.log('Error', err));
+    }
+  </script>-->
 
-    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+  <link href="lib/ionic/css/ionic.css" rel="stylesheet">
 
-    <link href="css/style.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
 
-    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
-    <link href="css/ionic.app.css" rel="stylesheet">
-    -->
-
-    <!-- ionic/angularjs js -->
-    <script src="lib/ionic/js/ionic.bundle.js"></script>
-
-    <!-- cordova script (this will be a 404 during development) -->
-    <script src="cordova.js"></script>
-
-    <!-- your app's js -->
-    <script src="js/app.js"></script>
-  </head>
-  <body ng-app="starter">
-
-  <ion-nav-view></ion-nav-view>
+  <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+  <link href="css/ionic.app.css" rel="stylesheet">
+  -->
 
 
-  <script id="templates/view.html" type="text/ng-template">
+  <!-- ionic/angularjs js -->
+  <script src="lib/ionic/js/ionic.bundle.js"></script>
 
-    <ion-nav-view name="start-view"></ion-nav-view>
-    <ion-nav-view name="vert-view"></ion-nav-view>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/3.7.6/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyBj5bqiXgj_ZtX6DcbZWEyuXou25ue3bRc",
+      authDomain: "cs407-chess.firebaseapp.com",
+      databaseURL: "https://cs407-chess.firebaseio.com",
+      projectId: "cs407-chess",
+      storageBucket: "cs407-chess.appspot.com",
+      messagingSenderId: "1076250071965"
+    };
 
+    firebase.initializeApp(config);
+    console.log("firebase: " + firebase);
   </script>
+  <!-- AngularFire -->
+  <script src="https://cdn.firebase.com/libs/angularfire/2.0.1/angularfire.min.js"></script>
 
-  <script id="templates/start.html" type="text/ng-template">
-    <ion-view view-title="Start View">
-      <ion-content class="background">
-        <div>
-          <div id="title">UNNAMED! YAY!</div>
-          <div id="startMenu">
-              <button class="smNavButton">Multiplayer</button>
-              <button class="smNavButton" ng-click="singlePlayer()">Single Player</button>
-              <button class="smNavButton">Analysis</button>
-              <button class="smNavButton">Settings</button>
+
+  <!-- cordova script (this will be a 404 during development) -->
+  <script src="cordova.js"></script>
+
+  <!-- your app's js -->
+  <!--<script src="js/stockfish.js"></script>-->
+  <script src="js/app.js"></script>
+</head>
+<body ng-app="starter">
+
+<ion-nav-view></ion-nav-view>
+
+
+<script id="templates/view.html" type="text/ng-template">
+
+  <ion-nav-view name="start-view"></ion-nav-view>
+  <ion-nav-view name="vert-view"></ion-nav-view>
+
+</script>
+
+<script id="templates/start.html" type="text/ng-template">
+  <ion-view view-title="Start View">
+    <ion-content class="background">
+      <div>
+        <div id="title">UNNAMED! YAY!</div>
+        <div id="startMenu" ng-controller="startCtrl">
+          <button class="smNavButton" ng-click="login_popup()"> {{currentState}}</button>
+
+          <div id="login_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <div class="loader_frame" id="loader">
+                  <div class="loader"></div>
+                </div>
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+              </div>
+              <div class="popup_container">
+                <label><b>Email</b></label>
+                <input type="text" placeholder="Enter Email" name="email" ng-model="email" required>
+
+                <label><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
+                <div id='error_message'></div>
+                <button ng-click="login()" class="popup_submit"> Login</button>
+                <input type="checkbox" checked="checked"> Remember me
+                <br>
+                <label> Don't have an account? </label>
+                <button ng-click="signup_popup()" class="button-balanced"> Signup!</button>
+              </div>
+              <div class="popup_container">
+                <span> Forgot <a href="#">password?</a></span>
+              </div>
+            </form>
           </div>
+
+          <div id="signup_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+              </div>
+              <div class="popup_container">
+                <label><b>Email</b></label>
+                <input type="text" placeholder="Enter Email" name="email" ng-model="email" required>
+
+                <label><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="password" ng-model="password" required>
+
+                <label><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" name="username" ng-model="username" required>
+
+                <button ng-click="signup()" class="signup_button"> Signup!</button>
+              </div>
+              <div class="popup_container">
+              </div>
+            </form>
+          </div>
+
+          <div id="logged_in_popup" class="popup_background">
+            <form class="popup-content">
+              <div class="popup_outer_container">
+                <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+              </div>
+              <div class="popup_container">
+                <label><b>You are logged in as {{userName}}.</b></label>
+                <button ng-click="logout()" class="logout_button"><b>Logout?</b></button>
+              </div>
+              <div class="popup_container">
+              </div>
+            </form>
+          </div>
+
+          <button class="smNavButton" ng-click="multiPlayer()">Multiplayer</button>
+          <button class="smNavButton" ng-click="singlePlayer()">Single Player</button>
+          <button class="smNavButton">Analysis</button>
+          <button class="smNavButton">Settings</button>
         </div>
-      </ion-content>
-    </ion-view>
-  </script>
+      </div>
+    </ion-content>
+  </ion-view>
+</script>
 
-  <script id="templates/vert.html" type="text/ng-template">
-    <ion-view view-title="Vertical View">
-      <ion-content class="background">
+<script id="templates/vert.html" type="text/ng-template">
+  <ion-view view-title="Vertical View">
+    <div > ng-controller="vertCtrl">
+
+      <div id="multiPlayer_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+
+            <p></p>
+            <h5> This is the multiPlayer popup window! </h5>
+            <button ng-click="setMultiPlayer()"> Create Game </button>
+            <label for="selectGame"> Select a game ID: </label>
+            <select id="selectGame" ng-init="gameID = select_game[0].value" ng-model="gameID" ng-options="game.value as game.name for game in select_game">
+            </select>
+            <button ng-click="joinMultiPlayer()"> Join Game </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="cont_game_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+
+            <p></p>
+            <h5> You already have a game in progress! </h5>
+            <button ng-click="stockFish_popup()"> New Game</button>
+            <button ng-click="load_game()"> Continue Game</button>
+          </div>
+        </form>
+      </div>
+
+
+      <div id="stockFish_popup" class="popup_background">
+        <form class="popup-content">
+          <div class="popup_outer_container">
+            <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+          </div>
+          <div class="popup_container">
+            <p></p>
+            <h4 align="center"> Stockfish Settings </h4>
+            <br>
+
+            <label for="selectColor"> Play as: </label>
+            <select id="selectColor" ng-init="selectedColor = select_colors[0].value" ng-model="selectedColor" ng-options="color.value as color.name for color in select_colors">
+            </select>
+
+            <br>
+            <br>
+            <label for="selectSkill"> AI Strength: </label>
+            <select id="selectSkill" ng-init="selectedSkill = select_skill[3].value" ng-model="selectedSkill" ng-options="skill.value as skill.name for skill in select_skill">
+            </select>
+            <br>
+            <br>
+            <!--
+            <label for="player_time"> Your time: </label>
+            <select ng-model="player_time" id="player_time">
+              <option>.</option>
+            </select>
+            <br>
+            <br>
+            <label for="computer_time"> Computer time: </label>
+            <select ng-model="player2_time" id="computer_time">
+              <option>.</option>
+            </select>
+            -->
+            <button ng-click="popup_close()"> Create Game</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <ion-content class="background">
+      <div>
+        <div id="player1info">
+          <span id="clock1"><h2 class="clock"><b>{{time1}}</b></h2></span>
+          <p ng-repeat="piece in capturedPieces1 | orderBy:'piece.value' track by $index">
+            <img class="capPiece" ng-src="img/{{color1}}{{piece.type}}{{appearance}}.png">
+          </p>
+        </div>
+
         <div>
-          <div id="player1info">
-            <span id="clock1"><h2 class="clock"><b>{{time1}}</b></h2></span>
-            <p ng-repeat="piece in capturedPieces1 | orderBy:'piece.value' track by $index">
-              <img class="capPiece" ng-src="img/{{color1}}{{piece.type}}{{appearance}}.png">
-            </p>
-          </div>
+          <p class="user" id="user1"><img ng-src="{{avatar1}}" class="avatar"> {{username1}}</p>
+        </div>
 
-          <div>
-            <p class="user" id="user1"><img ng-src="{{avatar1}}" class="avatar">  {{username1}}</p>
-          </div>
-
+        <div>
           <img id="board" ng-src="img/board{{appearance}}.png">
-
-
-          <div>
-            <p class="user" id ="user2">{{username2}}  <img ng-src = "{{avatar2}}" class ="avatar"></p>
-          </div>
-
-          <div id="player2info">
-            <p ng-repeat="piece in capturedPieces2 | orderBy:'piece.value' track by $index">
-              <img class="capPiece" ng-src="img/{{color2}}{{piece.type}}{{appearance}}.png">
-            </p><span id="clock2"><h2 class="clock"><b>{{time2}}</b></h2></span>
-          </div>
-          <div id="botSpacing"></div>
-          <div id="menus">
-            <button class="menuButton" onclick="openNavNot()">Notation</button><button class="menuButton" onclick="openNavMenu()">Menu</button>
-          </div>
-
-          <div id="notationMenu" class="botMenu">
-            <a class="closeMenu" onclick="closeNavNot()">v</a>
-            <table id="notTable">
-              <tr style="width: 100%; height:10%;">
-                <td>
-                  <table style="width: 100%; height:100%;">
-                    <tr>
-                      <th id="notTableHead" colspan="2"><center>Notation</center></th>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div style="height: 100%; overflow:auto;">
-                    <table id="notTableRows">
-                      <tr ng-repeat="move in notation track by $index">
-                        <td style="width: 10%;">{{$index + 1}}</td><td>{{move[0]}}</td><td>{{move[1]}}</td>
-                      </tr>
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </table>
-
-          </div>
-          <div id="mainMenu" class="botMenu">
-            <a class="closeMenu" onclick="closeNavMenu()">v</a>
-            <div id="mmButtons">
-              <button class="mmNavButton" ng-click="startMenu()">Main Menu</button>
-              <button class="mmNavButton">Offer Draw</button>
-              <button class="mmNavButton">Resign</button>
-              <button class="mmNavButton">Settings</button>
+          <div class="board_grid">
+            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)">
+              <img class="capPiece" ng-src="{{get_piece_image_icon(piece)}}">
             </div>
           </div>
+        </div>
+
+        <div>
+          <p class="user" id="user2">{{username2}} <img ng-src="{{avatar2}}" class="avatar"></p>
+        </div>
+
+        <div id="player2info">
+          <p ng-repeat="piece in capturedPieces2 | orderBy:'piece.value' track by $index">
+            <img class="capPiece" ng-src="img/{{color2}}{{piece.type}}{{appearance}}.png">
+          </p><span id="clock2"><h2 class="clock"><b>{{time2}}</b></h2></span>
+        </div>
+        <div id="botSpacing"></div>
+        <div id="menus">
+          <button class="menuButton" onclick="openNavNot()">Notation</button>
+          <button class="menuButton" onclick="openNavMenu()">Menu</button>
+        </div>
+
+        <div id="notationMenu" class="botMenu">
+          <a class="closeMenu" onclick="closeNavNot()">v</a>
+          <table id="notTable">
+            <tr style="width: 100%; height:10%;">
+              <td>
+                <table style="width: 100%; height:100%;">
+                  <tr>
+                    <th id="notTableHead" colspan="2">
+                      <center>Notation</center>
+                    </th>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="height: 100%; overflow:auto;">
+                  <table id="notTableRows">
+                    <tr ng-repeat="move in notation track by $index">
+                      <td style="width: 10%;">{{$index + 1}}</td>
+                      <td>{{move[0]}}</td>
+                      <td>{{move[1]}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </table>
 
         </div>
-      </ion-content>
-    </ion-view>
-  </script>
+        <div id="mainMenu" class="botMenu">
+          <a class="closeMenu" onclick="closeNavMenu()">v</a>
+          <div id="mmButtons">
+            <button class="mmNavButton" ng-click="startMenu()">Main Menu</button>
+            <button class="mmNavButton">Offer Draw</button>
+            <button class="mmNavButton">Resign</button>
+            <button class="mmNavButton">Settings</button>
+          </div>
+        </div>
 
-  <script>
-    function openNavNot() {
-      document.getElementById("notationMenu").style.height = "85%";
-    }
-
-    function closeNavNot() {
-      document.getElementById("notationMenu").style.height = "0";
-    }
-
-    function openNavMenu() {
-      document.getElementById("mainMenu").style.height = "85%";
-    }
-
-    function closeNavMenu() {
-      document.getElementById("mainMenu").style.height = "0";
-    }
-  </script>
+      </div>
+    </ion-content>
+  </ion-view>
+</script>
 
 
-  </body>
+<script>
+  function openNavNot() {
+    document.getElementById("notationMenu").style.height = "85%";
+  }
+
+  function closeNavNot() {
+    document.getElementById("notationMenu").style.height = "0";
+  }
+
+  function openNavMenu() {
+    document.getElementById("mainMenu").style.height = "85%";
+  }
+
+  function closeNavMenu() {
+    document.getElementById("mainMenu").style.height = "0";
+  }
+</script>
+
+
+</body>
 </html>
