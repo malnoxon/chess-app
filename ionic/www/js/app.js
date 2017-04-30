@@ -648,12 +648,15 @@ angular.module('starter', ['ionic', 'firebase'])
           }
 
           $scope.makeMove($scope.board, orig, dest, $scope.promoting_to, last_move);
+
+          if($scope.inCheckmate($scope.opponent.color, $scope.board, this_move)) {
+            console.log($scope.opponent.color + " is checkmated!");
+          }
           $scope.toMove = $scope.opponent.color;
 
           if ($stateParams.singlePlayer) {
             $scope.computerMove();
           }
-
 
           // Update MP database
           if ($scope.user) {
@@ -752,11 +755,6 @@ angular.module('starter', ['ionic', 'firebase'])
       var move = "";
       var piece_symbols = {"Knight": "k", "Bishop": "b", "Rook": "r", "Queen": "q", "King": "k", "Pawn": ""};
       var col_letters = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
-      // var connecting_char = "-";
-      // if(dest.piece != null) {
-      //   connecting_char = "x";
-      // }
-      // move.concat(piece_symbols[orig.piece.type], (orig.row + 1).toString(), col_letters[orig.col], piece_symbols[dest.piece.type], (dest.row + 1).toString(), col_letters[dest.col]);
 
       // A nullmove from the Engine to the GUI should be send as 0000.
       // Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
@@ -765,10 +763,6 @@ angular.module('starter', ['ionic', 'firebase'])
         var promotion_val = queened_to.toLowerCase();
       }
       move = move.concat(col_letters[orig.col], (8 - orig.row).toString(), col_letters[dest.col], (8 - dest.row).toString(), promotion_val);
-
-      // if (queened_to != null) {
-      //   move.concat("=", piece_symbols[queened_to.type]);
-      // }
 
       return move;
     };
@@ -792,6 +786,34 @@ angular.module('starter', ['ionic', 'firebase'])
       $scope.board[new_y][new_x] = $scope.board[old_y][old_x];
       $scope.board[old_y][old_x] = "";
     }
+
+    $scope.inCheckmate = function(color, board, last_move) {
+      for(var old_row = 0; old_row < 8; old_row++) {
+        for(var old_col = 0; old_col < 8; old_col++) {
+          var from = {
+            "piece": board[old_row][old_col],
+            "row": old_row,
+            "col": old_col
+          };
+          if(from.piece.color == color) {
+            for (var new_row = 0; new_row < 8; new_row++) {
+              for (var new_col = 0; new_col < 8; new_col++) {
+                var dest = {
+                  "piece": board[new_row][new_col], // need peice to know if null ("")
+                  "row": new_row,
+                  "col": new_col
+                };
+
+                if ($scope.legalMove(from, dest, board, true, last_move)) {
+                  return false;
+                }
+              }
+            }
+          }
+        }
+      }
+      return true;
+    };
 
     /**
      * @param board - the board
@@ -934,29 +956,28 @@ angular.module('starter', ['ionic', 'firebase'])
       // MOVE PAWN
       // TODO: also need queening?
       if (orig.piece.type == ("Pawn")) {
-        // var notation_arr = [].concat.apply([],$scope.notation);
-        // if (notation_arr[notation_arr.length-1]) {
-        //   var last_move = notation_arr[notation_arr.length - 1];
-        // } else {
-        //   var last_move = {0: " "}; // ie nothing
-        // }
-
         if (orig.piece.color == "black") {
-          if ((dest.row == orig.row + 1) || // can only move forward by 1
-            (orig.row == 1 && dest.row == orig.row + 2)) { // unless this is the first move, then can move forward by 2
+          if ((dest.row == orig.row + 1)) {
             if ((dest.col == orig.col && dest.piece.type == null) ||  // can move directly forward if there is no piece there
               ((dest.col == orig.col + 1 || dest.col == orig.col - 1) && dest.piece.color == "white")) { // can move diagonally forward if taking
               return true;
             }
           }
+          if(orig.row == 1 && dest.row == orig.row + 2 && orig.col == dest.col
+                 && board[2][dest.col] == "" && board[3][dest.col] == "") {
+            return true;
+          }
 
         } else if (orig.piece.color == "white") { // same rules as black but flipped
-          if ((dest.row == orig.row - 1) || // can only move forward by 1
-            (orig.row == 6 && dest.row == orig.row - 2)) { // unless this is the first move, then can move forward by 2
+          if ((dest.row == orig.row - 1)) {
             if ((dest.col == orig.col && dest.piece.type == null) ||  // can move directly forward if there is no piece there
               ((dest.col == orig.col + 1 || dest.col == orig.col - 1) && dest.piece.color == "black")) { // can move diagonally forward if taking
               return true;
             }
+          }
+          if(orig.row == 6 && dest.row == orig.row - 2 && orig.col == dest.col &&
+                  board[5][dest.col] == "" && board[4][dest.col] == "") {
+            return true;
           }
         }
 
@@ -1165,9 +1186,6 @@ angular.module('starter', ['ionic', 'firebase'])
             "col": to_x
           };
           $scope.board = $scope.makeMove($scope.board, orig, dest, promoting_to, last_move);
-          // $scope.board[to_y][to_x] = $scope.board[from_y][from_x];
-          // $scope.board[from_y][from_x] = '';
-          // $scope.board[to_y][to_x].hasMoved = true;
           if ($scope.opponent.color == "white") {
             //TODO: queening/castling/enpassant
             $scope.notation.push([best_move, '']);
@@ -1176,34 +1194,9 @@ angular.module('starter', ['ionic', 'firebase'])
             //console.log($scope.notation);
           }
 
-          // if($scope.board[to_y][to_x].piece == "Pawn" &&
-          //   ($scope.opponent.color == "black" && to_y == 7) || ($scope.opponent.color == "white" && to_y == 0)) {
-          //   //TODO: set $scope.promoting_to in GUI somehow
-          //   var promoting_to = best_move[4];
-          //   var symbol_to_names = {"q": "Queen", "r": "Rook", "n": "Knight", "b": "Bishop"};
-          //   $scope.board[to_y][to_x] = new Piece(symbol_to_names[promoting_to], $scope.opponent.color);
-          // }
-
-          // // Castling special cases
-          // if(best_move == 'e1g1') {
-          //   $scope.board[7][5] = $scope.board[7][7];
-          //   $scope.board[7][7] = "";
-          // } else if(best_move == 'e1c1') {
-          //   $scope.board[7][3] = $scope.board[7][0];
-          //   $scope.board[7][0] = "";
-          // } else if(best_move == 'e8g8') {
-          //   $scope.board[0][5] = $scope.board[0][7];
-          //   $scope.board[0][7] = "";
-          // } else if(best_move == 'e8c8') {
-          //   $scope.board[0][3] = $scope.board[0][0];
-          //   $scope.board[0][0] = "";
-          // }
-          //
-          // // En passant special case
-          // if($scope.last_move_en_passant) {
-          //   $scope.board[from_y][to_x] = "";
-          // }
-          // $scope.toMove = $scope.player.color;
+          if($scope.inCheckmate($scope.player.color, $scope.board, best_move)) {
+            console.log($scope.player.color + " is checkmated!");
+          }
 
           $scope.toMove = $scope.player.color;
           $scope.human_turn = true;
