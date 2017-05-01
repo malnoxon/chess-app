@@ -779,7 +779,7 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.get_piece_image_icon = function (piece) {
       if (piece == "") {
-        return "//:0";
+        return "img/transparent.png";
       } else {
         return "img/" + piece.color + piece.type + $scope.appearance + ".png";
       }
