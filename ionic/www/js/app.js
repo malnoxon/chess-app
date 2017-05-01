@@ -783,7 +783,15 @@ angular.module('starter', ['ionic', 'firebase'])
       } else {
         return "img/" + piece.color + piece.type + $scope.appearance + ".png";
       }
-    }
+    };
+
+    $scope.is_selected_cell = function (index) {
+      if (index === selected_cell) {
+        return true;
+      } else {
+        return false;
+      }
+    };
 
     $scope.place_peices = function() {
 

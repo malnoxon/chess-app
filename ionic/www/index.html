@@ -264,7 +264,7 @@
         <div>
           <img id="board" ng-src="img/board{{appearance}}.png">
           <div class="board_grid">
-            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)">
+            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)" ng-class="{'selected_cell': is_selected_cell($index)}">
               <img class="capPiece" ng-src="{{get_piece_image_icon(piece)}}">
             </div>
           </div>
