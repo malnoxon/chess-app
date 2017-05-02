@@ -774,12 +774,14 @@ angular.module('starter', ['ionic', 'firebase'])
                   toMove: "black",
                   board: $scope.board,
                   notation: $scope.notation,
+                  algebraic_notation: $scope.algebraic_notation
                 });
               } else {
                 firebase.database().ref("multiPlayerGames/" + $scope.gameID).update({
                   toMove: "white",
                   board: $scope.board,
-                  notation: $scope.notation
+                  notation: $scope.notation,
+                  algebraic_notation: $scope.algebraic_notation
                 });
               }
 
