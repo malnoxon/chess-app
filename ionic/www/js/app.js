@@ -61,7 +61,6 @@ angular.module('starter', ['ionic', 'firebase'])
           'vert-view': {
             templateUrl: "templates/vert.html",
             controller: "vertCtrl",
-
           }
         }
       });
@@ -202,7 +201,7 @@ angular.module('starter', ['ionic', 'firebase'])
     };
   })
 
-  .controller('vertCtrl', function ($scope, $state, $stateParams, $window) {
+  .controller('vertCtrl', function ($scope, $state, $stateParams, $ionicHistory, $timeout) {
     function Piece(type, color) {
       this.type = type;
       this.color = color;
@@ -281,46 +280,69 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.gameID = -1; //error if not updated before create game
 
+    $scope.opponent = {
+      username: $scope.username1,
+      avatar: $scope.avatar1,
+      color: "",
+      captured: $scope.capturedPieces1
+    };
+    $scope.player = {
+      username: $scope.username2,
+      avatar: $scope.avatar2,
+      color: "",
+      captured: $scope.capturedPieces2
+    };
 
     //Check if user already has a game in progress
-    var load_game = null;
+    $scope.load_game_booll = null;
     firebase.auth().onAuthStateChanged(function (user) {
       $scope.user = user
       if ($scope.user) {
         console.log("user is valid for database access");
         $scope.username2 = $scope.user.displayName;
         if ($stateParams.singlePlayer) {
-          firebase.database().ref('users/' + $scope.user.uid).once("value")
-            .then(function (snapshot) {
-              $scope.username1 = "StockFish"
-              $scope.username2 = user.displayName;
-              $scope.opponent = {
-                username: $scope.username1,
-                avatar: $scope.avatar1,
-                color: "",
-                captured: $scope.capturedPieces1
-              };
-              $scope.player = {
-                username: $scope.username2,
-                avatar: $scope.avatar2,
-                color: "",
-                captured: $scope.capturedPieces2
-              };
-              try {
-                load_game = snapshot.val().single_player_Game;
-                if (load_game) {
-                  $scope.cont_game_popup();
-                } else {
+          $timeout(function() {
+            console.log("Waiting 500ms")
+
+            firebase.database().ref('users/' + $scope.user.uid).once("value")
+              .then(function (snapshot) {
+                $scope.username1 = "StockFish"
+                $scope.username2 = user.displayName;
+
+                $scope.opponent = {
+                  username: $scope.username1,
+                  avatar: $scope.avatar1,
+                  color: "",
+                  captured: $scope.capturedPieces1
+                };
+
+                $scope.player = {
+                  username: $scope.username2,
+                  avatar: $scope.avatar2,
+                  color: "",
+                  captured: $scope.capturedPieces2
+                };
+                try {
+                  $scope.load_game_bool = snapshot.val().single_player_Game;
+                  console.log("load game: " + $scope.load_game_bool)
+                  if ($scope.load_game_bool) {
+                    console.log("OPening cont_game_popup")
+                    $scope.cont_game_popup();
+                  } else {
+                    console.log("opeing generic popup")
+                    $scope.stockFish_popup();
+                  }
+                } catch (error) {
+                  console.log(error);
+                }
+                if (!$scope.load_game_bool) {
                   $scope.stockFish_popup();
                 }
-              } catch (error) {
-                console.log(error);
-              }
-              if (!load_game) {
-                $scope.stockFish_popup();
-              }
-            })
+
+              })
+          }, 1000);
         } else if ($stateParams.multiPlayer) {
+          $timeout(function () { console.log ("Waiting 500 ms")
           firebase.database().ref('users/' + $scope.user.uid).once("value")
             .then(function () {
               $scope.opponent = {
@@ -336,16 +358,19 @@ angular.module('starter', ['ionic', 'firebase'])
                 captured: $scope.capturedPieces2
               };
             })
+
+          $scope.multiPlayer_popup();
+          }, 1000)
+
+        } else {
+          console.log("UNHANDLED GAME STATE")
         }
-        $scope.multiPlayer_popup();
-      } else {
-        console.log("UNHANDLED GAME STATE")
       }
     });
 
 
     $scope.stockFish_popup = function () {
-      if($scope.user) {
+      if ($scope.user) {
         //clear single_player_Game database
         firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").set(null);
 
@@ -359,7 +384,16 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.setMultiPlayer = function () {
       if ($scope.user) {
-        $scope.player.color = "white";
+        $scope.player.color = $scope.selectedColor;
+
+        if($scope.player.color == "white") {
+          $scope.opponent.color = "black"
+        } else if ($scope.player.color == "black") {
+          $scope.opponent.color = "white"
+        } else {
+          console.log("ERROR in setMultipPLayer")
+        }
+
 
         // Generate new Key
         var maxNum = 10000;
@@ -379,8 +413,6 @@ angular.module('starter', ['ionic', 'firebase'])
             [$scope.gameID]: {
               Agent1: $scope.user.uid,
               player1: $scope.player,
-              // Agent2: "na",
-              // player2: "na",
               board: $scope.board,
               toMove: 'white',
             }
@@ -393,34 +425,39 @@ angular.module('starter', ['ionic', 'firebase'])
     }
 
     $scope.multiPlayer_popup = function () {
+      console.log("displaying multiplayer popup")
       document.getElementById('multiPlayer_popup').style.display = 'block';
+      console.log( "display: "+ document.getElementById('multiPlayer_popup').style.display)
 
       // set Games to pick from
       firebase.database().ref("multiPlayerGames").on("value", function (snapshot) {
         $scope.$evalAsync(function () { //idk if necessary
           console.log("Saw database change in multiplayer game keys");
           var keys = [];
-          snapshot.forEach(function(childSnapshot) {
-            // console.log("MP set popup -- username: " + JSON.stringify(childSnapshot.val().player1))
-            // console.log(childSnapshot.val().player1.username + " is username ")
-            var displayString = "";
-            if (childSnapshot.val().player1.username == " " || childSnapshot.val().player1.username == null){
-              displayString = "anon"
+          snapshot.forEach(function (childSnapshot) {
+            if (!childSnapshot.val().Agent1 && !childSnapshot.val().Agent2 && childSnapshot.key > 0) {
+              console.log("NO USER CONNECTED: REMOVING GAME " + childSnapshot.key)
+              firebase.database().ref("multiPlayerGames/" + childSnapshot.key).remove();
+            // } else if (childSnapshot.val().Agent1 && childSnapshot.val().Agent2) {
+            //   //pass
             } else {
-              displayString = childSnapshot.val().player1.username;
+              var displayString = "";
+              if (childSnapshot.val().player1.username == " " || childSnapshot.val().player1.username == null) {
+                displayString = "anon"
+              } else {
+                displayString = childSnapshot.val().player1.username;
+              }
+              keys.push({value: childSnapshot.key, name: displayString + " - ID:" + childSnapshot.key});
             }
-            // console.log(childSnapshot.val().player1.username == " ")
-            // console.log(displayString)
-            keys.push({value: childSnapshot.key, name: displayString +" - ID:"+ childSnapshot.key});
           });
-          //console.log(keys)
           $scope.select_game = keys;
-          // console.log("select_game" + JSON.stringify($scope.select_game));
 
         })
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
       });
+
+      $scope.$apply();
     }
 
     $scope.joinMultiPlayer = function () {
@@ -433,9 +470,16 @@ angular.module('starter', ['ionic', 'firebase'])
           $scope.username = name;
 
           if (snapshot.val().Agent1) {  // Other user is player1
-            $scope.player.color = "white";
             if (snapshot.val().player1.color == "white") {
               $scope.player.color = "black"
+              //$scope.player2.color = "black" // redundant
+              $scope.opponent.color = "white"
+              //$scope.player1.color = "white" // redundant
+            } else {
+              $scope.player.color = "white"
+              //$scope.player2.color = "white" // redundant
+              $scope.opponent.color = "black"
+              //$scope.player1.color = "black" // redundant
             }
             // necessary b/c firebase cannot handle null
             var player = {username: name, color: $scope.player.color, avatar: pic}
@@ -445,9 +489,16 @@ angular.module('starter', ['ionic', 'firebase'])
                 player2: player
               })
           } else if (snapshot.val().Agent2) {
-            $scope.player.color = "white";
-            if (snapshot.val().player2.color == "white") {
+            if (snapshot.val().player1.color == "white") {
               $scope.player.color = "black"
+              $scope.player2.color = "black" // redundant
+              $scope.opponent.color = "white"
+              $scope.player1.color = "white" // redundant
+            } else {
+              $scope.player.color = "white"
+              $scope.player2.color = "white" // redundant
+              $scope.opponent.color = "black"
+              $scope.player1.color = "black" // redundant
             }
             var player = {username: name, color: $scope.player.color, avatar: pic}
             ref.update(
@@ -481,14 +532,15 @@ angular.module('starter', ['ionic', 'firebase'])
         firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/").on("value", function (snapshot) {
           $scope.$evalAsync(function () {
             console.log("Game Listener Activated")
-            // console.log("************************************************")
-            //
-            // console.log("all Data: " + JSON.stringify(snapshot.val()));
-            //
-            // console.log("************************************************")
-            //console.log("new board: " + JSON.stringify(snapshot.val().board));
             $scope.board = snapshot.val().board;
             $scope.toMove = snapshot.val().toMove;
+            if (snapshot.val().checkmate) {
+              $scope.checkmate_popup();
+              // clean up game
+              var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent1").remove();
+              var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent2").remove();
+
+            }
             console.log("MP database notation: " + snapshot.val().notation)
             if(snapshot.val().notation) {
               $scope.notation = snapshot.val().notation;
@@ -497,39 +549,13 @@ angular.module('starter', ['ionic', 'firebase'])
 
           //FOR DISCONNECT
           if ($scope.user) {
-            var ref1 = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent1");
-            var ref2 = firebase.database().ref("multiPlayerGames/" + $scope.gameID);
-            var ref3 = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent2");
-            var ref4 = firebase.database().ref("multiPlayerGames/" + $scope.gameID);
-
-            ref1.onDisconnect().cancel();
-            ref2.onDisconnect().cancel();
-            ref3.onDisconnect().cancel();
-            ref4.onDisconnect().cancel();
-
             if (snapshot.val().Agent1 == $scope.user.uid) {
-              if (snapshot.val().Agent2) { // Other player still in game
-                console.log("OTHER PLAYER STILL IN GAME USER !!!1111")
-                //Remove player
-                console.log("This is player 1: player 2 is connected")
-                ref1.onDisconnect().remove();
-              } else { // Other player is not playing anymore
-                //Remove game
-                console.log("This is player 1: player 2 is not connected")
-                ref2.onDisconnect().remove()
-              }
+              var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent1");
+              ref.onDisconnect().remove();
             } else if (snapshot.val().Agent2 == $scope.user.uid) { // current user is player 2
-              if (snapshot.val().Agent1) { // Other player still in game
-                //Remove player
-                console.log("This is player 2: player 1 is connected")
-                ref3.onDisconnect().remove();
-              } else { // Other player is not playing anymore
-                //Remove game
-                console.log("This is player 2: player 1 is not connected")
-                ref4.onDisconnect().remove()
-              }
+              var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent2");
+              ref.onDisconnect().remove();
             }
-
           }
 
         }, function (errorObject) {
@@ -537,7 +563,6 @@ angular.module('starter', ['ionic', 'firebase'])
         });
 
       }
-
     }
 
     $scope.setStockFish = function() {
@@ -551,9 +576,12 @@ angular.module('starter', ['ionic', 'firebase'])
     }
 
     $scope.popup_close = function () {
+      console.log("calling POPUP CLOSE()")
       document.getElementById('stockFish_popup').style.display = 'none';
       document.getElementById('cont_game_popup').style.display = 'none';
       document.getElementById("multiPlayer_popup").style.display = 'none';
+      document.getElementById('checkmate_popup').style.display = 'none';
+
       if ($stateParams.singlePlayer) {
         $scope.setStockFish();
       }
@@ -567,8 +595,8 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.load_game = function() {
       document.getElementById('cont_game_popup').style.display = 'none';
-      var load_notation = load_game.notation;
-      $scope.player.color = load_game.color;
+      var load_notation = $scope.load_game_bool.notation;
+      $scope.player.color = $scope.load_game_bool.color;
 
       if ($scope.player.color == "white") {
         $scope.opponent.color = "black";
@@ -596,11 +624,64 @@ angular.module('starter', ['ionic', 'firebase'])
 
     }
 
-    var selected_cell = -1;
+    $scope.checkmate_popup = function() {
+      document.getElementById('checkmate_popup').style.display = 'block';
+      if($stateParams.singlePlayer) {
+        console.log("removing sinlge player game data")
+        firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
 
+      }
+    }
+
+    $scope.checkmate_newGame = function() {
+
+      //$state.reload();
+
+      $state.go($state.current, {}, {reload: true});
+
+      // $timeout(function () {
+      //   $ionicHistory.clearCache();
+      //   $ionicHistory.clearHistory();
+      //   console.log('clearing cache')
+      // },300)
+      //
+      // $state.go("view.start", {do_reload: true})
+      // // $ionicHistory.clearCache().then(function(){
+      // $state.reload();
+      //   //$state.go('view.vert', {}, {reload: false});
+      // })
+     // $state.reload();
+      //$window.location.reload(true)
+      //$state.go("view.vert", {singlePlayer: $stateParams.singlePlayer, multiPlayer: $stateParams.multiPlayer}, {reload: true});
+      // $scope.popup_close();
+      // if($stateParams.singlePlayer) {
+      //   $state.reload();
+      //   $scope.stockFish_popup();
+      // } else if ($stateParams.multiPlayer) {
+      //   $state.reload();
+      //   $scope.multiPlayer_popup();
+      // } else {
+      //   console.log("ERROR")
+      // }
+    }
+
+    var selected_cell = -1;
     $scope.cell_clicked = function (n) {
+      if ($scope.player.color === "black"){
+        n = 63 - n;
+      }
+
       if (selected_cell == -1) {
         selected_cell = n;
+
+        var old_row = Math.floor(selected_cell / 8);
+        var old_col = selected_cell % 8;
+
+        if (!$scope.board[old_row][old_col]){
+          // didn't click a piece
+          selected_cell = -1;
+        }
+
       } else {
 
         var new_row = Math.floor(n / 8);
@@ -623,13 +704,13 @@ angular.module('starter', ['ionic', 'firebase'])
 
         //console.log("toMove = " + $scope.toMove + " " + orig + " " + dest);
         $scope.last_move_en_passant = false;
-        console.log("Mid-click -- notation: " + $scope.notation)
+
         var notation_arr = [].concat.apply([],$scope.notation);
         var last_move = null;
         if (notation_arr[notation_arr.length-1]) {
           var last_move = notation_arr[notation_arr.length - 1];
         }
-        if ($scope.legalMove(orig, dest, $scope.board, true, last_move) && $scope.toMove == $scope.player.color) {
+        if ($scope.legalMove(orig, dest, $scope.board, true, last_move) && $scope.toMove == $scope.player.color && $scope.toMove == $scope.board[old_row][old_col].color) {
           if ($scope.board[new_row][new_col] != "") {
             $scope.player.captured.push($scope.board[new_row][new_col]);
           }
@@ -651,6 +732,10 @@ angular.module('starter', ['ionic', 'firebase'])
 
           if($scope.inCheckmate($scope.opponent.color, $scope.board, this_move)) {
             console.log($scope.opponent.color + " is checkmated!");
+            $scope.checkmate_popup();
+            if($stateParams.multiPlayer) {
+              firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/").update({checkmate: 1});
+            }
           }
           $scope.toMove = $scope.opponent.color;
 
@@ -664,6 +749,7 @@ angular.module('starter', ['ionic', 'firebase'])
               console.log("updating Multiplayer database");
 
               if ($scope.player.color == "white"){
+                console.log("UPDATING TOMOVE to black")
                 firebase.database().ref("multiPlayerGames/" + $scope.gameID).update({
                   toMove: "black",
                   board: $scope.board,
@@ -682,7 +768,7 @@ angular.module('starter', ['ionic', 'firebase'])
               console.log("updating singleplayer database");
               firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").update({
                 color: $scope.player.color,
-                //notation: $scope.notation
+                notation: $scope.notation
               });
             }
           }
@@ -693,13 +779,33 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.get_piece_image_icon = function (piece) {
       if (piece == "") {
-        return "//:0";
+        return "img/transparent.png";
       } else {
         return "img/" + piece.color + piece.type + $scope.appearance + ".png";
       }
-    }
+    };
 
-    function place_peices() {
+    $scope.is_selected_cell = function (index) {
+      if ($scope.player.color === 'black') {
+        index = 63 - index;
+      }
+
+      if (index === selected_cell) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    $scope.place_peices = function() {
+
+      //Clear board
+      // for (var i = 0; i < 8; i ++) {
+      //   for (var j = 0; j < 8; j++) {
+      //     $scope.board[i][j] = "";
+      //   }
+      // }
+
       // Black piece initial placement
       $scope.board[0][0] = new Piece("Rook", "black");
       $scope.board[0][1] = new Piece("Knight", "black");
@@ -737,11 +843,18 @@ angular.module('starter', ['ionic', 'firebase'])
       $scope.board[6][5] = new Piece("Pawn", "white");
       $scope.board[6][6] = new Piece("Pawn", "white");
       $scope.board[6][7] = new Piece("Pawn", "white");
+      $scope.$evalAsync();
     }
-    place_peices();
+    $scope.place_peices();
 
     $scope.getBoard = function () {
-      return [].concat.apply([], $scope.board);
+      var b = [].concat.apply([], $scope.board);
+
+      if ($scope.player.color === "black") {
+        b.reverse();
+      }
+
+      return b;
     };
 
     /**
@@ -758,6 +871,7 @@ angular.module('starter', ['ionic', 'firebase'])
 
       // A nullmove from the Engine to the GUI should be send as 0000.
       // Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+      // stop promotion for not
       var promotion_val = '';
       if(queened_to != null) {
         var promotion_val = queened_to.toLowerCase();
@@ -826,11 +940,13 @@ angular.module('starter', ['ionic', 'firebase'])
       board[dest.row][dest.col] = board[orig.row][orig.col];
       board[orig.row][orig.col] = "";
 
-      if(orig.piece == "Pawn" &&
-        (orig.piece.color == "black" && dest.row == 7) || (orig.piece.color == "white" && dest.row == 0)) {
+      if(orig.piece.type == "Pawn" && ((orig.piece.color == "black" && dest.row == 7) || (orig.piece.color == "white" && dest.row == 0))) {
         //TODO: set promoting_to in GUI somehow
+        console.log("PROMOTION of: " + orig.piece.type)
+        console.log("Location: " + orig.piece.color + " " + dest.row + dest.col)
         if(promoting_to == null) {
-          console.log("No piece promotion value specified!")
+          console.log("No piece promotion value specified! Default to Queen")
+          promoting_to = "Queen";
         }
         board[dest.row][dest.col] = new Piece(promoting_to, orig.piece.color);
       }
@@ -1194,12 +1310,13 @@ angular.module('starter', ['ionic', 'firebase'])
             //console.log($scope.notation);
           }
 
-          if($scope.inCheckmate($scope.player.color, $scope.board, best_move)) {
-            console.log($scope.player.color + " is checkmated!");
-          }
-
           $scope.toMove = $scope.player.color;
           $scope.human_turn = true;
+
+          if($scope.inCheckmate($scope.player.color, $scope.board, best_move)) {
+            console.log($scope.player.color + " is checkmated!");
+            $scope.checkmate_popup();
+          }
 
           $scope.$apply();
         }
@@ -1219,4 +1336,5 @@ angular.module('starter', ['ionic', 'firebase'])
       $scope.back_button();
 
     }
+
   });
