@@ -157,13 +157,12 @@
             <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
           </div>
           <div class="popup_container">
-            <p></p>
-            <h5 align="center"> Start or join a game! </h5>
+            <p align="center">Start or join a game!</p>
 
-            <label for="selectColor_multi"> Play as: </label>
+            <center><label for="selectColor_multi"> Play as: </label>
             <select id="selectColor_multi" ng-init="selectedColor = select_colors[0].value" ng-model="selectedColor" ng-options="color.value as color.name for color in select_colors">
             </select>
-            <button ng-click="setMultiPlayer()"> Create Game </button>
+            <button ng-click="setMultiPlayer()" class="small_popup_button"> Create Game </button>
 
             <br>
             <br>
@@ -172,18 +171,7 @@
             <label for="selectGame"> Select a game ID: </label>
             <select id="selectGame" ng-init="gameID = select_game[0].value" ng-model="gameID" ng-options="game.value as game.name for game in select_game">
             </select>
-            <button ng-click="joinMultiPlayer()"> Join Game </button>
-            <!--<p>This is the multilayer popup window!</p>-->
-            <div align="center">
-              <button ng-click="setMultiPlayer()" class="small_popup_button"> Create Game </button>
-            </div>
-            <br>
-            <div align="center">
-              <label for="selectGame"> Select a game ID: </label>
-              <select id="selectGame" ng-init="gameID = select_game[0].value" ng-model="gameID" ng-options="game.value as game.name for game in select_game">
-              </select>
-              <button ng-click="joinMultiPlayer()" class="small_popup_button"> Join Game </button>
-            </div>
+            <button ng-click="joinMultiPlayer()" class="small_popup_button"> Join Game </button></center>
           </div>
         </form>
       </div>
@@ -333,12 +321,8 @@
             <button class="mmNavButton">Resign</button>
             <button class="mmNavButton">Settings</button>
           </div>
-<<<<<<< Updated upstream
-
-=======
         </div>
         </div>
->>>>>>> Stashed changes
       </div>
     </ion-content>
   </ion-view>
