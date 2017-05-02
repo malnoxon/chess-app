@@ -202,6 +202,10 @@ popup_input[type=text], popup_input[type=password] {
   overflow: hidden;
 }
 
+.selected_cell {
+  border: 1px solid black;
+}
+
 #player1info {
   margin: 3vh auto 3vh 3vw;
 }

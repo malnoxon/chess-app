@@ -71,10 +71,9 @@
   <ion-view view-title="Start View">
     <ion-content class="background">
       <div>
-        <div id="title">UNNAMED! YAY!</div>
-        <div id="startMenu" ng-controller="startCtrl">
-          <button class="smNavButton" ng-click="login_popup()"> {{currentState}}</button>
-
+        <div id="title">SimpleChess</div>
+       <!--  <div id="startMenu">-->
+        <div id="startMenu">
           <div id="login_popup" class="popup_background">
             <form class="popup-content">
               <div class="popup_outer_container">
@@ -138,9 +137,10 @@
             </form>
           </div>
 
-          <button class="smNavButton" ng-click="multiPlayer()">Multiplayer</button>
           <button class="smNavButton" ng-click="singlePlayer()">Single Player</button>
-          <button class="smNavButton">Analysis</button>
+          <button class="smNavButton" ng-click="multiPlayer()">Multiplayer</button>
+          <button class="smNavButton" ng-click="login_popup()"> {{currentState}}</button>
+          <!-- <button class="smNavButton">Analysis</button> -->
           <button class="smNavButton">Settings</button>
         </div>
       </div>
@@ -150,8 +150,6 @@
 
 <script id="templates/vert.html" type="text/ng-template">
   <ion-view view-title="Vertical View">
-    <div > ng-controller="vertCtrl">
-
       <div id="multiPlayer_popup" class="popup_background">
         <form class="popup-content">
           <div class="popup_outer_container">
@@ -160,8 +158,17 @@
           <div class="popup_container">
 
             <p></p>
-            <h5> This is the multiPlayer popup window! </h5>
+            <h5 align="center"> Start or join a game! </h5>
+
+            <label for="selectColor_multi"> Play as: </label>
+            <select id="selectColor_multi" ng-init="selectedColor = select_colors[0].value" ng-model="selectedColor" ng-options="color.value as color.name for color in select_colors">
+            </select>
             <button ng-click="setMultiPlayer()"> Create Game </button>
+
+            <br>
+            <br>
+            <p align="center"> OR </p>
+
             <label for="selectGame"> Select a game ID: </label>
             <select id="selectGame" ng-init="gameID = select_game[0].value" ng-model="gameID" ng-options="game.value as game.name for game in select_game">
             </select>
@@ -224,6 +231,23 @@
         </form>
       </div>
     </div>
+
+    <div id="checkmate_popup" class="popup_background">
+
+      <form class="popup-content">
+        <div class="popup_outer_container">
+          <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+        </div>
+        <div class="popup_container">
+
+          <p></p>
+          <h5> Checkmate! </h5>
+          <button ng-click="checkmate_newGame()"> New Game</button>
+          <button ng-click="back_button()"> Mainmenu </button>
+        </div>
+      </form>
+    </div>
+
     <ion-content class="background">
       <div>
         <div id="player1info">
@@ -240,7 +264,7 @@
         <div>
           <img id="board" ng-src="img/board{{appearance}}.png">
           <div class="board_grid">
-            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)">
+            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)" ng-class="{'selected_cell': is_selected_cell($index)}">
               <img class="capPiece" ng-src="{{get_piece_image_icon(piece)}}">
             </div>
           </div>
@@ -294,12 +318,11 @@
         <div id="mainMenu" class="botMenu">
           <a class="closeMenu" onclick="closeNavMenu()">v</a>
           <div id="mmButtons">
-            <button class="mmNavButton" ng-click="startMenu()">Main Menu</button>
+            <button class="mmNavButton" ng-click="back_button()">Main Menu</button>
             <button class="mmNavButton">Offer Draw</button>
             <button class="mmNavButton">Resign</button>
             <button class="mmNavButton">Settings</button>
           </div>
-        </div>
 
       </div>
     </ion-content>
