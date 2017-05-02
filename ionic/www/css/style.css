@@ -27,9 +27,9 @@
   display: inline-block;
   width: 100px;
   height: 100px;
-  border: 16px solid #f3f3f3;
+  border: 16px solid #E3C4AC;
   border-radius: 50%;
-  border-top: 16px solid #3498db;
+  border-top: 16px solid #40240F;
 
   -webkit-animation: spin 1.5s linear infinite;
   animation: spin 1.5s linear infinite;
@@ -52,34 +52,42 @@
 /* Full-width input fields */
 popup_input[type=text], popup_input[type=password] {
   width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
+  /*padding: 10vh 10vw;
+  margin: 8vw 0;*/
   display: inline-block;
-  border: 1px solid #ccc;
   box-sizing: border-box;
 }
 
 .popup_submit {
-  background-color: #4CAF50;
-  padding: 14px 20px;
-  margin: 8px 0;
+  background-color: #D4A079;
+  border-radius: 10%;
   border: none;
-  cursor: pointer;
+  color: #8B5934;
+  padding: 2vh 20vw;
+  margin: 5vh 0;
   width: 100%;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 0 2vw 0 #40240F;
+  cursor: pointer;
 }
 
-.popup_submit:hover {
-  opacity: 0.8;
+.popup_submit:hover,
+.popup_submit:focus {
+  background-color: #E3C4AC;
 }
 
 .popup_outer_container {
   text-align: center;
-  margin: 24px 0 12px 0;
+  margin: 2.5vh 0;
   position: relative;
 }
 
 .popup_container {
-  padding: 16px;
+  padding: 5vw;
+  font-family: times;
+  color: #D4A079;
 }
 
 /* The Close Button (x) */
@@ -87,14 +95,14 @@ popup_input[type=text], popup_input[type=password] {
   position: absolute;
   right: 25px;
   top: 0;
-  color: #000;
+  color: #D4A079;
   font-size: 35px;
   font-weight: bold;
 }
 
 .popup_close:hover,
 .popup_close:focus {
-  color: red;
+  color: #E3C4AC;
   cursor: pointer;
 }
 
@@ -107,29 +115,62 @@ popup_input[type=text], popup_input[type=password] {
   left: 0;
   width: 100%;
   height: 100%;
-  padding-top: 50px;
+  padding-top: 25vh;
 }
 
 .popup-content {
-  background-color: #fefefe;
+  background-color: #8B5934;
   margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
-  border: 2px solid #AAAAAA;
+  border: 2px solid #693E1F;
   width: 80%; /* Could be more or less, depending on screen size */
 }
 
 .logout_button {
-  width: auto;
-  padding: 10px 18px;
-  background-color: #f44336;
+  background-color: #D4A079;
+  border-radius: 10%;
+  border: none;
+  color: #8B5934;
+  padding: 2vh 20vw;
+  margin: 5vh 0;
+  width: 100%;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 0 2vw 0 #40240F;
+  cursor: pointer;
 }
 
 .signup_button {
-  background-color: dodgerblue;
-  padding: 14px 20px;
-  margin: 8px 0;
+  background-color: #D4A079;
+  border-radius: 10%;
   border: none;
-  cursor: pointer;
+  color: #8B5934;
+  padding: 2vh 20vw;
+  margin: 5vh 0;
   width: 100%;
+  text-align: center;
+  font-size: 5vw;
+  font-family: times;
+  box-shadow: 0 0 2vw 0 #40240F;
+  cursor: pointer;
+}
+.small_popup_button {
+  background-color: #D4A079;
+  border-radius: 10%;
+  border: none;
+  color: #8B5934;
+  padding: .5vh 2vw;
+  margin: 0 1vw;
+  text-align: center;
+  font-size: 4vw;
+  font-family: times;
+  box-shadow: 0 0 2vw 0 #40240F;
+  cursor: pointer;
+}
+
+.small_popup_button:hover,
+.small_popup_button:focus {
+  background-color: #E3C4AC;
 }
 
 /**********************************************************************/
@@ -185,20 +226,22 @@ popup_input[type=text], popup_input[type=password] {
 
 .board_grid {
   float: left;
-  position: absolute;
-  width: 75vw;
-  height: 40vh;
+  position: fixed;
+  width: 74.5vw;
+  height: 74.5vw;
   margin-left: 14vw;
+  margin-top: 1.5vw;
   overflow: hidden;
   z-index: 1;
-  bottom: 30vh;
 }
 
 .board_cell {
   float: left;
-  /*position: absolute;*/
-  width: 9.375vw;
-  height: 5vh;
+  right: .5vw;
+  bottom: .5vw;
+  position: relative;
+  width: 9.125vw;
+  height: 9.125vw;
   overflow: hidden;
 }
 
@@ -311,7 +354,7 @@ popup_input[type=text], popup_input[type=password] {
   border: none;
   color: #D4A079;
   padding: .5vh 0;
-  margin: 0 10vw;
+  margin: 0 9.75vw;
   width: 30vw;
   text-align: center;
   font-size: 5vw;
@@ -334,6 +377,7 @@ popup_input[type=text], popup_input[type=password] {
 
 #mmButtons {
   padding-top: 30%;
+  visibility: hidden;
 }
 
 #notTable {
@@ -342,6 +386,8 @@ popup_input[type=text], popup_input[type=password] {
   height: 80%;
   box-shadow: 0 1vw 2vw 0 #40240F;
   font-family: times;
+  visibility: hidden;
+  background-color: #E3C4AC;
 }
 
 #notTableHead {
@@ -357,7 +403,7 @@ popup_input[type=text], popup_input[type=password] {
   color: #40240F;
   font-size: 16px;
   vertical-align: middle;
-  border: 1px solid #40240F;
+  /*border: 1px solid #40240F;*/
 }
 
 #notTableRows td {
