@@ -786,6 +786,10 @@ angular.module('starter', ['ionic', 'firebase'])
     };
 
     $scope.is_selected_cell = function (index) {
+      if ($scope.player.color === 'black') {
+        index = 63 - index;
+      }
+
       if (index === selected_cell) {
         return true;
       } else {
