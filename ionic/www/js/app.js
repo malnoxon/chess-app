@@ -581,6 +581,7 @@ angular.module('starter', ['ionic', 'firebase'])
       document.getElementById('cont_game_popup').style.display = 'none';
       document.getElementById("multiPlayer_popup").style.display = 'none';
       document.getElementById('checkmate_popup').style.display = 'none';
+      document.getElementById('stalemate_popup').style.display = 'none';
 
       if ($stateParams.singlePlayer) {
         $scope.setStockFish();
@@ -626,6 +627,15 @@ angular.module('starter', ['ionic', 'firebase'])
 
     $scope.checkmate_popup = function() {
       document.getElementById('checkmate_popup').style.display = 'block';
+      if($stateParams.singlePlayer) {
+        console.log("removing sinlge player game data")
+        firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
+
+      }
+    }
+
+    $scope.stalemate_popup = function() {
+      document.getElementById('stalemate_popup').style.display = 'block';
       if($stateParams.singlePlayer) {
         console.log("removing sinlge player game data")
         firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
@@ -735,6 +745,13 @@ angular.module('starter', ['ionic', 'firebase'])
             $scope.checkmate_popup();
             if($stateParams.multiPlayer) {
               firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/").update({checkmate: 1});
+            }
+          }
+          if($scope.inStalemate($scope.opponent.color, $scope.board, this_move)) {
+            console.log($scope.opponent.color + " is stalemated!");
+            $scope.stalemate_popup();
+            if($stateParams.multiPlayer) {
+              firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/").update({stalemate: 1});
             }
           }
           $scope.toMove = $scope.opponent.color;
@@ -901,7 +918,22 @@ angular.module('starter', ['ionic', 'firebase'])
       $scope.board[old_y][old_x] = "";
     }
 
+    $scope.inStalemate = function(color, board, last_move) {
+      if(!$scope.isInCheck(board, color) && !$scope.hasLegalMove(color, board, last_move)) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
     $scope.inCheckmate = function(color, board, last_move) {
+      if($scope.isInCheck(board, color) && !$scope.hasLegalMove(color, board, last_move)) {
+        return true;
+      }
+      return false;
+    };
+
+    $scope.hasLegalMove = function(color, board, last_move) {
       for(var old_row = 0; old_row < 8; old_row++) {
         for(var old_col = 0; old_col < 8; old_col++) {
           var from = {
@@ -919,14 +951,14 @@ angular.module('starter', ['ionic', 'firebase'])
                 };
 
                 if ($scope.legalMove(from, dest, board, true, last_move)) {
-                  return false;
+                  return true;
                 }
               }
             }
           }
         }
       }
-      return true;
+      return false;
     };
 
     /**
@@ -1316,6 +1348,11 @@ angular.module('starter', ['ionic', 'firebase'])
           if($scope.inCheckmate($scope.player.color, $scope.board, best_move)) {
             console.log($scope.player.color + " is checkmated!");
             $scope.checkmate_popup();
+          }
+
+          if($scope.inStalemate($scope.player.color, $scope.board, best_move)) {
+            console.log($scope.player.color + " is stalemate!");
+            $scope.stalemate_popup();
           }
 
           $scope.$apply();
