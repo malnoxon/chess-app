@@ -866,7 +866,7 @@ angular.module('starter', ['ionic', 'firebase'])
      */
     $scope.moveToUCINotation = function (orig, dest, queened_to) {
       var move = "";
-      var piece_symbols = {"Knight": "k", "Bishop": "b", "Rook": "r", "Queen": "q", "King": "k", "Pawn": ""};
+      var piece_symbols = {"Knight": "N", "Bishop": "B", "Rook": "R", "Queen": "Q", "King": "K", "Pawn": ""};
       var col_letters = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
 
       // A nullmove from the Engine to the GUI should be send as 0000.
