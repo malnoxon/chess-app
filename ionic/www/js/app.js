@@ -876,7 +876,8 @@ angular.module('starter', ['ionic', 'firebase'])
               console.log("updating singleplayer database");
               firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").update({
                 color: $scope.player.color,
-                notation: $scope.notation
+                notation: $scope.notation,
+                algebraic_notation: $scope.algebraic_notation
               });
             }
           }
