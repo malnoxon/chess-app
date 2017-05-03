@@ -798,8 +798,11 @@ angular.module('starter', ['ionic', 'firebase'])
 
         var notation_arr = [].concat.apply([],$scope.notation);
         var last_move = null;
-        if (notation_arr[notation_arr.length-1]) {
+        if (notation_arr[notation_arr.length-1] && orig.piece.color == "white") {
           var last_move = notation_arr[notation_arr.length - 1];
+        }
+        else if (notation_arr[notation_arr.length-2] && orig.piece.color == "black") {
+          var last_move = notation_arr[notation_arr.length - 2];
         }
         if ($scope.legalMove(orig, dest, $scope.board, true, last_move) && $scope.toMove == $scope.player.color && $scope.toMove == $scope.board[old_row][old_col].color) {
           if ($scope.board[new_row][new_col] != "") {
@@ -814,6 +817,26 @@ angular.module('starter', ['ionic', 'firebase'])
             capture = "x";
           }
           var this_move_algebraic = orig.piece.notation + this_move[0] + this_move[1] + capture + this_move[2] + this_move[3];
+          if(this_move_algebraic == "Ke1-g1" || this_move_algebraic == "Ke8-g8") {
+            this_move_algebraic = "0-0";
+          }
+          if(this_move_algebraic == "Ke1-g1+" || this_move_algebraic == "Ke8-g8+") {
+            this_move_algebraic = "0-0+";
+          }
+          if(this_move_algebraic == "Ke1-c1" || this_move_algebraic == "Ke8-c8") {
+            this_move_algebraic = "0-0-0";
+          }
+          if(this_move_algebraic == "Ke1-c1+" || this_move_algebraic == "Ke8-c8+") {
+            this_move_algebraic = "0-0-0+";
+          }
+          $scope.makeMove($scope.board, orig, dest, $scope.promoting_to, last_move);
+          if($scope.isInCheck($scope.board, $scope.opponent.color)) {
+            if($scope.inCheckmate($scope.player.color, $scope.board, last_move)) {
+              this_move_algebraic = this_move_algebraic + "#";
+            } else {
+              this_move_algebraic = this_move_algebraic + "+";
+            }
+          }
           if ($scope.player.color == "white") {
             //TODO: queening/castling/enpassant
             console.log("notation: " + $scope.notation)
@@ -827,7 +850,6 @@ angular.module('starter', ['ionic', 'firebase'])
             //console.log($scope.notation);
           }
 
-          $scope.makeMove($scope.board, orig, dest, $scope.promoting_to, last_move);
 
           if($scope.inCheckmate($scope.opponent.color, $scope.board, this_move)) {
             console.log($scope.opponent.color + " is checkmated!");
@@ -1344,8 +1366,8 @@ angular.module('starter', ['ionic', 'firebase'])
           if(((orig.piece.color == "black" && orig.row == 0) || (orig.piece.color == "white" && orig.row == 7)) &&
             orig.col == 4 && board[orig.row][orig.col].hasMoved == false && determine_check == true) {
             // kingside
-            if(board[0][7] != "" && board[0][7].type == ("Rook") && board[0][7].hasMoved == false &&
-              board[0][5] == "" && board[0][6] == "") {
+            if(board[orig.row][7] != "" && board[orig.row][7].type == ("Rook") && board[orig.row][7].hasMoved == false &&
+              board[orig.row][5] == "" && board[orig.row][6] == "") {
               var new_board = $scope.arrayClone(board);
               var in_between = {
                 "piece": new Piece("King", orig.piece.color),
@@ -1360,8 +1382,8 @@ angular.module('starter', ['ionic', 'firebase'])
               }
             }
             // queenside
-            if(board[0][0] != "" && board[0][0].type == ("Rook") && board[0][0].hasMoved == false &&
-              board[0][1] == "" && board[0][2] == "" && board[0][3] == "") {
+            if(board[orig.row][0] != "" && board[orig.row][0].type == ("Rook") && board[orig.row][0].hasMoved == false &&
+              board[orig.row][1] == "" && board[orig.row][2] == "" && board[orig.row][3] == "") {
               var new_board = $scope.arrayClone(board);
               var in_between = {
                 "piece": new Piece("King", orig.piece.color),
@@ -1431,7 +1453,26 @@ angular.module('starter', ['ionic', 'firebase'])
             capture = "x";
           }
           var best_move_algebraic = orig.piece.notation + best_move[0] + best_move[1] + capture + best_move[2] + best_move[3];
+          if(best_move_algebraic == "Ke1-g1" || best_move_algebraic == "Ke8-g8") {
+            best_move_algebraic = "0-0";
+          }
+          if(best_move_algebraic == "Ke1-g1+" || best_move_algebraic == "Ke8-g8+") {
+            best_move_algebraic = "0-0+";
+          }
+          if(best_move_algebraic == "Ke1-c1" || best_move_algebraic == "Ke8-c8") {
+            best_move_algebraic = "0-0-0";
+          }
+          if(best_move_algebraic == "Ke1-c1+" || best_move_algebraic == "Ke8-c8+") {
+            best_move_algebraic = "0-0-0+";
+          }
           $scope.board = $scope.makeMove($scope.board, orig, dest, promoting_to, last_move);
+          if($scope.isInCheck($scope.board, $scope.player.color)) {
+            if($scope.inCheckmate($scope.player.color, $scope.board, best_move)) {
+              best_move_algebraic = best_move_algebraic + "#";
+            } else {
+              best_move_algebraic = best_move_algebraic + "+";
+            }
+          }
           if ($scope.opponent.color == "white") {
             //TODO: queening/castling/enpassant
             $scope.notation.push([best_move, '']);
