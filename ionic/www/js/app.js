@@ -201,7 +201,7 @@ angular.module('starter', ['ionic', 'firebase'])
     };
   })
 
-  .controller('vertCtrl', function ($scope, $state, $stateParams, $ionicHistory, $timeout) {
+  .controller('vertCtrl', function ($scope, $state, $stateParams, $ionicHistory, $interval, $timeout) {
     function Piece(type, color) {
       this.type = type;
       this.color = color;
@@ -233,6 +233,67 @@ angular.module('starter', ['ionic', 'firebase'])
       }
     }
 
+
+    function getTimeRemaining(endingTime) {
+      var t = endingTime - Date.now();
+      var seconds = Math.floor ( (t/1000) % 60);
+      var minutes = Math.floor ( (t/1000/60) % 60);
+      if (seconds < 10) {
+        seconds = "0" + seconds;
+      }
+      return {
+        'minutes' : minutes,
+        'seconds' : seconds
+      };
+    }
+
+    var timeinterval, timeint;
+
+    $scope.startClock1 = function() {
+      var endDateTime = new Date();
+      endDateTime.setMinutes(endDateTime.getMinutes() + 5);
+      timeinterval = $interval(function () {
+        var t = getTimeRemaining(endDateTime);
+        $scope.time1 = t.minutes.toString() + ':' + t.seconds.toString();
+        if (t.minutes == 0 && t.seconds == 0) {
+          $scope.toMove = "black";
+          $timeout = true;
+          $scope.stopT1();
+          $scope.startClock2();
+        } else if ($scope.toMove == "black") {
+          $scope.stopT1();
+          $scope.startClock2();
+        }
+      }, 100);
+    }
+    $scope.startClock2 = function() {
+      var endDateTime = new Date();
+      endDateTime.setMinutes(endDateTime.getMinutes() + 5);
+      timeint = $interval(function() {
+        var m = getTimeRemaining(endDateTime);
+        $scope.time2 = m.minutes.toString() + ":" + m.seconds.toString();
+        if (m.minutes == 0 && m.seconds == 0 ) {
+          $scope.toMove = "white";
+          $timeout = true;
+          $scope.stopT2();
+          $scope.startClock1();
+        } else if ($scope.toMove == "white") {
+          $scope.stopT2();
+          $scope.startClock1();
+        }
+      }, 100);
+    }
+    $scope.stopT1 = function() {
+      $interval.cancel(timeinterval);
+    }
+    $scope.stopT2 = function() {
+      $interval.cancel(timeint);
+    }
+    $scope.stopT1();
+    $scope.stopT2();
+
+
+
     $scope.username1 = " ";
     $scope.username2 = " ";
 
@@ -248,8 +309,6 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.capturedPieces1 = [];
     $scope.capturedPieces2 = [];
 
-    $scope.time1 = "5:00";
-    $scope.time2 = "1:20:00";
 
     $scope.board = [
       ["", "", "", "", "", "", "", ""],
@@ -422,6 +481,8 @@ angular.module('starter', ['ionic', 'firebase'])
       }
       $scope.createMPDBListener();
       $scope.popup_close();
+
+      $scope.startClock2();
     }
 
     $scope.multiPlayer_popup = function () {
@@ -458,6 +519,7 @@ angular.module('starter', ['ionic', 'firebase'])
       });
 
       $scope.$apply();
+
     }
 
     $scope.joinMultiPlayer = function () {
@@ -522,6 +584,7 @@ angular.module('starter', ['ionic', 'firebase'])
       }
       $scope.createMPDBListener();
       $scope.popup_close();
+
     }
 
     $scope.createMPDBListener = function() {
@@ -539,7 +602,8 @@ angular.module('starter', ['ionic', 'firebase'])
               // clean up game
               var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent1").remove();
               var ref = firebase.database().ref("multiPlayerGames/" + $scope.gameID + "/Agent2").remove();
-
+              $scope.stopT1();
+              $scope.stopT2();
             }
             console.log("MP database notation: " + snapshot.val().notation)
             if(snapshot.val().notation) {
@@ -592,6 +656,7 @@ angular.module('starter', ['ionic', 'firebase'])
       if($scope.opponent.color == "white" && $stateParams.singlePlayer) {
         $scope.computerMove();
       }
+      $scope.startClock2();
     }
 
     $scope.load_game = function() {
@@ -632,6 +697,8 @@ angular.module('starter', ['ionic', 'firebase'])
         firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
 
       }
+      $scope.stopT2();
+      $scope.stopT1();
     }
 
     $scope.stalemate_popup = function() {
@@ -641,6 +708,8 @@ angular.module('starter', ['ionic', 'firebase'])
         firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
 
       }
+      $scope.stopT1();
+      $scope.stopT2();
     }
 
     $scope.checkmate_newGame = function() {
