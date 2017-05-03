@@ -210,6 +210,7 @@ angular.module('starter', ['ionic', 'firebase'])
 
       if (this.type == "Pawn") {
         this.value = 1;
+        this.notation = "";
       }
       else if (this.type == "Knight") {
         this.value = 3;
@@ -304,6 +305,7 @@ angular.module('starter', ['ionic', 'firebase'])
     //$scope.color2 = "white";
 
     $scope.notation = [];
+    $scope.algebraic_notation = [];
     $scope.toMove = "white"
 
     $scope.capturedPieces1 = [];
@@ -575,8 +577,12 @@ angular.module('starter', ['ionic', 'firebase'])
           $scope.board = snapshot.val().board;
           $scope.toMove = snapshot.val().toMove;
           console.log("MP database notation: " + snapshot.val().notation)
+          console.log("MP database notation: " + snapshot.val().algebraic_notation)
           if(snapshot.val().notation) {
             $scope.notation = snapshot.val().notation;
+          }
+          if(snapshot.val().algebraic_notation) {
+            $scope.algebraic_notation = snapshot.val().algebraic_notation;
           }
         })
       } else {
@@ -606,8 +612,12 @@ angular.module('starter', ['ionic', 'firebase'])
               $scope.stopT2();
             }
             console.log("MP database notation: " + snapshot.val().notation)
+            console.log("MP database algebraic_notation: " + snapshot.val().algebraic_notation)
             if(snapshot.val().notation) {
               $scope.notation = snapshot.val().notation;
+            }
+            if(snapshot.val().algebraic_notation) {
+              $scope.algebraic_notation = snapshot.val().algebraic_notation;
             }
           })
 
@@ -650,7 +660,7 @@ angular.module('starter', ['ionic', 'firebase'])
       if ($stateParams.singlePlayer) {
         $scope.setStockFish();
       }
-      console.log($scope.gameID)
+      console.log($scope.gameID);
 
 
       if($scope.opponent.color == "white" && $stateParams.singlePlayer) {
@@ -662,6 +672,7 @@ angular.module('starter', ['ionic', 'firebase'])
     $scope.load_game = function() {
       document.getElementById('cont_game_popup').style.display = 'none';
       var load_notation = $scope.load_game_bool.notation;
+      var load_algebraic_notation = $scope.load_game_bool.algebraic_notation;
       $scope.player.color = $scope.load_game_bool.color;
 
       if ($scope.player.color == "white") {
@@ -672,13 +683,14 @@ angular.module('starter', ['ionic', 'firebase'])
 
       for (var i=0; i < load_notation.length; i++) {
         $scope.UCItoMove(load_notation[i][0], "white");
-        $scope.toMove = "black"
+        $scope.toMove = "black";
         if (load_notation[i][1]) {
           $scope.UCItoMove(load_notation[i][1], "black");
-          $scope.toMove = "white"
+          $scope.toMove = "white";
         }
       }
       $scope.notation = load_notation;
+      $scope.algebraic_notation = load_algebraic_notation;
 
       if ($scope.toMove == $scope.opponent.color) {
         $scope.computerMove();
@@ -796,14 +808,22 @@ angular.module('starter', ['ionic', 'firebase'])
 
           // player notation
           var this_move = $scope.moveToUCINotation(orig, dest, null);
+          //TODO checks, checkmate, castling, abiguous pieces
+          var capture = "-";
+          if(dest.piece != "") {
+            capture = "x";
+          }
+          var this_move_algebraic = orig.piece.notation + this_move[0] + this_move[1] + capture + this_move[2] + this_move[3];
           if ($scope.player.color == "white") {
             //TODO: queening/castling/enpassant
             console.log("notation: " + $scope.notation)
             $scope.notation.push([this_move, '']);
+            $scope.algebraic_notation.push([this_move_algebraic, '']);
             // !!!!! $scope.notation.push([$scope.moveToUCINotation(orig, dest, null), '']);
             //console.log($scope.notation);
           } else {
             $scope.notation[$scope.notation.length - 1][1] = this_move;
+            $scope.algebraic_notation[$scope.algebraic_notation.length - 1][1] = this_move_algebraic;
             //console.log($scope.notation);
           }
 
@@ -840,12 +860,14 @@ angular.module('starter', ['ionic', 'firebase'])
                   toMove: "black",
                   board: $scope.board,
                   notation: $scope.notation,
+                  algebraic_notation: $scope.algebraic_notation
                 });
               } else {
                 firebase.database().ref("multiPlayerGames/" + $scope.gameID).update({
                   toMove: "white",
                   board: $scope.board,
-                  notation: $scope.notation
+                  notation: $scope.notation,
+                  algebraic_notation: $scope.algebraic_notation
                 });
               }
 
@@ -1402,12 +1424,20 @@ angular.module('starter', ['ionic', 'firebase'])
             "row": to_y,
             "col": to_x
           };
+          //TODO checks, checkmate, castling, abiguous pieces
+          var capture = "-";
+          if(dest.piece != "") {
+            capture = "x";
+          }
+          var best_move_algebraic = orig.piece.notation + best_move[0] + best_move[1] + capture + best_move[2] + best_move[3];
           $scope.board = $scope.makeMove($scope.board, orig, dest, promoting_to, last_move);
           if ($scope.opponent.color == "white") {
             //TODO: queening/castling/enpassant
             $scope.notation.push([best_move, '']);
+            $scope.algebraic_notation.push([best_move_algebraic, '']);
           } else {
             $scope.notation[$scope.notation.length - 1][1] = best_move;
+            $scope.algebraic_notation[$scope.algebraic_notation.length - 1][1] = best_move_algebraic;
             //console.log($scope.notation);
           }
 
