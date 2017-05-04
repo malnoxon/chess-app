@@ -720,6 +720,16 @@ angular.module('starter', ['ionic', 'firebase'])
       $scope.stopT1();
     }
 
+    $scope.timeout_popup = function() {
+      document.getElementById('timeout_popup').style.display = 'block';
+      if($stateParams.singlePlayer) {
+        console.log("removing sinlge player game data")
+        firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").remove();
+      }
+      $scope.stopT2();
+      $scope.stopT1();
+    }
+
     $scope.stalemate_popup = function() {
       document.getElementById('stalemate_popup').style.display = 'block';
       if($stateParams.singlePlayer) {
