@@ -729,6 +729,8 @@ angular.module('starter', ['ionic', 'firebase'])
       if ($scope.toMove == $scope.opponent.color) {
         $scope.computerMove();
       }
+      $scope.startClock2();
+
     };
 
     $scope.back_button = function() {
