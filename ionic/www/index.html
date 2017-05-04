@@ -292,7 +292,7 @@
 
         <div>
           <div class="board_grid">
-            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)" ng-class="{'selected_cell': is_selected_cell($index)}">
+            <div class="board_cell" ng-repeat="piece in getBoard() track by $index" ng-click="cell_clicked($index)" ng-class="{'selected_cell': is_selected_cell($index), 'legal_move': is_legal_move($index)}">
               <center><img class="capPiece" ng-src="{{get_piece_image_icon(piece)}}"></center>
             </div>
           </div>

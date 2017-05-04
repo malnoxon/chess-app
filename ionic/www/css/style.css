@@ -246,7 +246,11 @@ popup_input[type=text], popup_input[type=password] {
 }
 
 .selected_cell {
-  border: 1px solid black;
+  border: 2px solid lightskyblue;
+}
+
+.legal_move {
+  border: 2px solid lawngreen;
 }
 
 #player1info {
