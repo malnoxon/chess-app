@@ -249,6 +249,10 @@ popup_input[type=text], popup_input[type=password] {
   border: 2px solid lightskyblue;
 }
 
+.legal_move {
+  border: 2px solid lawngreen;
+}
+
 #player1info {
   margin: 3vh auto 3vh 3vw;
 }

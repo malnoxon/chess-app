@@ -937,6 +937,48 @@ angular.module('starter', ['ionic', 'firebase'])
       }
     };
 
+    $scope.is_legal_move = function (index) {
+      if (selected_cell == -1) {
+        return false;
+      }
+
+      if ($scope.player.color === 'black') {
+        index = 63 - index;
+      }
+
+      var row = Math.floor(index / 8);
+      var col = index % 8;
+
+      var sel_row = Math.floor(selected_cell / 8);
+      var sel_col = selected_cell % 8;
+
+      var orig = {
+        "piece": $scope.board[sel_row][sel_col],
+        "row": sel_row,
+        "col": sel_col
+      };
+      var dest = {
+        "piece": $scope.board[row][col], // need peice to know if null ("")
+        "row": row,
+        "col": col
+      };
+
+      var notation_arr = [].concat.apply([],$scope.notation);
+      var last_move = null;
+      if (notation_arr[notation_arr.length-1] && orig.piece.color == "white") {
+        var last_move = notation_arr[notation_arr.length - 1];
+      }
+      else if (notation_arr[notation_arr.length-2] && orig.piece.color == "black") {
+        var last_move = notation_arr[notation_arr.length - 2];
+      }
+
+      if ($scope.legalMove(orig, dest, $scope.board, false, last_move)) {
+        return true;
+      }
+
+      return false;
+    };
+
     $scope.place_peices = function() {
 
       //Clear board
