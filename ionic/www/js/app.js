@@ -982,7 +982,7 @@ angular.module('starter', ['ionic', 'firebase'])
         var last_move = notation_arr[notation_arr.length - 2];
       }
 
-      if ($scope.legalMove(orig, dest, $scope.board, false, last_move)) {
+      if ($scope.legalMove(orig, dest, $scope.board, true, last_move)) {
         return true;
       }
 
