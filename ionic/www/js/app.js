@@ -236,69 +236,93 @@ angular.module('starter', ['ionic', 'firebase'])
 
 
     function getTimeRemaining(t) {
-      var seconds = Math.floor ( (t/1000) % 60);
-      var minutes = Math.floor ( (t/60/1000) % 60);
+      var seconds = Math.floor((t / 1000) % 60);
+      var minutes = Math.floor((t / 60 / 1000) % 60);
       if (seconds < 10) {
         seconds = "0" + seconds;
       }
       console.log("minutes = " + minutes);
       console.log("seconds = " + seconds);
       return {
-        'minutes' : minutes,
-        'seconds' : seconds
+        'minutes': minutes,
+        'seconds': seconds
       };
     }
 
-    var timeinterval, timeint;
-    $scope.clock1 = 5*60*1000;
-    $scope.clock2 = 5*60*1000;
+    if ($stateParams.singlePlayer) {
 
-    $scope.startClock1 = function() {
-      console.log("startClock1");
-      timeinterval = $interval(function () {
-        console.log("interval1")
-        var t = getTimeRemaining($scope.clock1);
-        $scope.time1 = t.minutes.toString() + ':' + t.seconds.toString();
-        $scope.clock1 -= 100;
-        if (t.minutes == 0 && t.seconds == 0) {
-          $timeout = true;
-          $scope.stopT1();
-          console.log("A");
-          $scope.timeout_popup();
-        } else if ($scope.toMove == "black") {
-          console.log("B");
-          $scope.stopT1();
-          $scope.startClock2();
+      var timeinterval, timeint;
+      $scope.clock1 = 5 * 60 * 1000;
+      $scope.clock2 = 5 * 60 * 1000;
+
+      $scope.startClock1 = function () {
+        console.log("startClock1");
+        timeinterval = $interval(function () {
+          console.log("interval1")
+          var t = getTimeRemaining($scope.clock1);
+          if($scope.player.color == "black") {
+            $scope.time1 = t.minutes.toString() + ':' + t.seconds.toString();
+          } else {
+            $scope.time2 = t.minutes.toString() + ':' + t.seconds.toString();
+          }
+          $scope.clock1 -= 100;
+          if (t.minutes == 0 && t.seconds == 0) {
+            $timeout = true;
+            $scope.stopT1();
+            console.log("A");
+            $scope.timeout_popup();
+          } else if ($scope.toMove == "black") {
+            console.log("B");
+            $scope.stopT1();
+            $scope.startClock2();
+          }
+        }, 100);
+      }
+      $scope.startClock2 = function () {
+        console.log("startClock2");
+        timeint = $interval(function () {
+          console.log("interval2")
+          var m = getTimeRemaining($scope.clock2);
+          if($scope.opponent.color == "black") {
+            $scope.time1 = m.minutes.toString() + ':' + m.seconds.toString();
+          } else {
+            $scope.time2 = m.minutes.toString() + ':' + m.seconds.toString();
+          }
+          $scope.clock2 -= 100;
+          if (m.minutes == 0 && m.seconds == 0) {
+            console.log("C");
+            $timeout = true;
+            $scope.stopT2();
+            $scope.timeout_popup();
+          } else if ($scope.toMove == "white") {
+            console.log("D");
+            $scope.stopT2();
+            $scope.startClock1();
+          }
+        }, 100);
+      }
+      $scope.stopT1 = function () {
+        $interval.cancel(timeinterval);
+      }
+      $scope.stopT2 = function () {
+        $interval.cancel(timeint);
+      }
+      $scope.stopT1();
+      $scope.stopT2();
+    } else {
+      $scope.time1 = "5:00"
+      $scope.time2 = "5:00"
+      $scope.startClock1 = function () { // pass
         }
-      }, 100);
-    }
-    $scope.startClock2 = function() {
-      console.log("startClock2");
-      timeint = $interval(function() {
-        console.log("interval2")
-        var m = getTimeRemaining($scope.clock2);
-        $scope.time2 = m.minutes.toString() + ":" + m.seconds.toString();
-        $scope.clock2 -= 100;
-        if (m.minutes == 0 && m.seconds == 0 ) {
-          console.log("C");
-          $timeout = true;
-          $scope.stopT2();
-          $scope.timeout_popup();
-        } else if ($scope.toMove == "white") {
-          console.log("D");
-          $scope.stopT2();
-          $scope.startClock1();
+      $scope.startClock2 = function () { // pass
         }
-      }, 100);
+      $scope.stopT1 = function () {
+        //pass
+        }
+      $scope.stopT2 = function () {
+        //pass
+      }
     }
-    $scope.stopT1 = function() {
-      $interval.cancel(timeinterval);
-    }
-    $scope.stopT2 = function() {
-      $interval.cancel(timeint);
-    }
-    $scope.stopT1();
-    $scope.stopT2();
 
 
 
@@ -698,6 +722,9 @@ angular.module('starter', ['ionic', 'firebase'])
       }
       $scope.notation = load_notation;
       $scope.algebraic_notation = load_algebraic_notation;
+      $scope.clock1 = $scope.load_game_bool.clock1;
+      console.log("clock1: "+clock1)
+      $scope.clock2 = $scope.load_game_bool.clock2;
 
       if ($scope.toMove == $scope.opponent.color) {
         $scope.computerMove();
@@ -918,7 +945,9 @@ angular.module('starter', ['ionic', 'firebase'])
               firebase.database().ref('users/' + $scope.user.uid + "/single_player_Game").update({
                 color: $scope.player.color,
                 notation: $scope.notation,
-                algebraic_notation: $scope.algebraic_notation
+                algebraic_notation: $scope.algebraic_notation,
+                clock1: $scope.clock1,
+                clock2: $scope.clock2
               });
             }
           }
