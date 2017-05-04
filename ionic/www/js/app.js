@@ -778,6 +778,8 @@ angular.module('starter', ['ionic', 'firebase'])
         if (!$scope.board[old_row][old_col]){
           // didn't click a piece
           selected_cell = -1;
+        } else if ($scope.board[old_row][old_col].color !== $scope.player.color) {
+          selected_cell = -1;
         }
 
       } else {
