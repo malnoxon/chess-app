@@ -235,13 +235,14 @@ angular.module('starter', ['ionic', 'firebase'])
     }
 
 
-    function getTimeRemaining(endingTime) {
-      var t = endingTime - Date.now();
+    function getTimeRemaining(t) {
       var seconds = Math.floor ( (t/1000) % 60);
-      var minutes = Math.floor ( (t/1000/60) % 60);
+      var minutes = Math.floor ( (t/60/1000) % 60);
       if (seconds < 10) {
         seconds = "0" + seconds;
       }
+      console.log("minutes = " + minutes);
+      console.log("seconds = " + seconds);
       return {
         'minutes' : minutes,
         'seconds' : seconds
@@ -249,36 +250,42 @@ angular.module('starter', ['ionic', 'firebase'])
     }
 
     var timeinterval, timeint;
+    $scope.clock1 = 5*60*1000;
+    $scope.clock2 = 5*60*1000;
 
     $scope.startClock1 = function() {
-      var endDateTime = new Date();
-      endDateTime.setMinutes(endDateTime.getMinutes() + 5);
+      console.log("startClock1");
       timeinterval = $interval(function () {
-        var t = getTimeRemaining(endDateTime);
+        console.log("interval1")
+        var t = getTimeRemaining($scope.clock1);
         $scope.time1 = t.minutes.toString() + ':' + t.seconds.toString();
+        $scope.clock1 -= 100;
         if (t.minutes == 0 && t.seconds == 0) {
-          $scope.toMove = "black";
           $timeout = true;
           $scope.stopT1();
-          $scope.startClock2();
+          console.log("A");
+          $scope.timeout_popup();
         } else if ($scope.toMove == "black") {
+          console.log("B");
           $scope.stopT1();
           $scope.startClock2();
         }
       }, 100);
     }
     $scope.startClock2 = function() {
-      var endDateTime = new Date();
-      endDateTime.setMinutes(endDateTime.getMinutes() + 5);
+      console.log("startClock2");
       timeint = $interval(function() {
-        var m = getTimeRemaining(endDateTime);
+        console.log("interval2")
+        var m = getTimeRemaining($scope.clock2);
         $scope.time2 = m.minutes.toString() + ":" + m.seconds.toString();
+        $scope.clock2 -= 100;
         if (m.minutes == 0 && m.seconds == 0 ) {
-          $scope.toMove = "white";
+          console.log("C");
           $timeout = true;
           $scope.stopT2();
-          $scope.startClock1();
+          $scope.timeout_popup();
         } else if ($scope.toMove == "white") {
+          console.log("D");
           $scope.stopT2();
           $scope.startClock1();
         }

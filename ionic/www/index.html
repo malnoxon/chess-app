@@ -245,6 +245,22 @@
       </form>
     </div>
 
+    <div id="timeout_popup" class="popup_background">
+
+      <form class="popup-content">
+        <div class="popup_outer_container">
+          <span ng-click='popup_close()' class="popup_close" title="popup_close">&times;</span>
+        </div>
+        <div class="popup_container">
+
+          <p></p>
+          <h5> Loss on time! </h5>
+          <button ng-click="checkmate_newGame()"> New Game</button>
+          <button ng-click="back_button()"> Main Menu </button>
+        </div>
+      </form>
+    </div>
+
     <div id="stalemate_popup" class="popup_background">
 
       <form class="popup-content">
