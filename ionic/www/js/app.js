@@ -982,7 +982,7 @@ angular.module('starter', ['ionic', 'firebase'])
         var last_move = notation_arr[notation_arr.length - 2];
       }
 
-      if ($scope.legalMove(orig, dest, $scope.board, false, last_move)) {
+      if ($scope.legalMove(orig, dest, $scope.board, true, last_move)) {
         return true;
       }
 
@@ -1424,7 +1424,7 @@ angular.module('starter', ['ionic', 'firebase'])
           }
 
           // check king in right spot (and that we aren't determining if a piece is in check, can't take a piece when castling
-          if(((orig.piece.color == "black" && orig.row == 0) || (orig.piece.color == "white" && orig.row == 7)) &&
+          if(((orig.piece.color == "black" && orig.row == 0 && dest.row == 0) || (orig.piece.color == "white" && orig.row == 7 && dest.row == 7)) &&
             orig.col == 4 && board[orig.row][orig.col].hasMoved == false && determine_check == true) {
             // kingside
             if(board[orig.row][7] != "" && board[orig.row][7].type == ("Rook") && board[orig.row][7].hasMoved == false &&
